@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function COUNTER(){
-cd $1 | ls -1 | wc -l
+ls -1 $1 | wc -l
 }
 
 sum=$(COUNTER $1)
