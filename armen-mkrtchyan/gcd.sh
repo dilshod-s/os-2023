@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function gcd(){
     
     n=$1
