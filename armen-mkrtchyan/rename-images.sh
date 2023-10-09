@@ -1,3 +1,5 @@
+#!/bin/bash
+
 for f_name in $(ls *.jpg)
 
  do
