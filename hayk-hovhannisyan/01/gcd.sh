@@ -1,33 +1,32 @@
 #!/bin/bash
 
  function GCD(){
-  frst=$1
-  sec=$2
-if [[ $frst == $sec ]]
+  a=$1
+  b=$2
+if [[ $a == $b ]]
  then
-  echo  "GCD is "$frst  
+  echo  "GCD is " $a  
   return
-elif [[ $frst -gt $sec ]]
+elif [[ $a -gt $b ]]
  then
-  let frst-=$sec
-  GCD $frst $sec
-elif [[ $frst -lt $sec ]]
+  let a-=$b
+  GCD $a $b
+elif [[ $a -lt $b ]]
  then
-  let sec-=$frst
-  GCD $frst $sec
+  let b-=$a
+  GCD $a $b
 fi 
 }
 
 while true
 do
-  read frst
-if [[ $frst == "" ]]
+  read a
+if [[ $a == "" ]]
 then 
   echo "bye"
   break
 else
-
-  read sec
-  GCD $frst $sec  
+  read b
+  GCD $a $b  
 fi
 done

@@ -1,6 +1,6 @@
 #!/bin/bash
-lim=$1
-for((sum=0;$sum < lim ;))
+limit=$1
+for((sum=0;$sum < $limit ;))
 do
  read num
 let sum+=num

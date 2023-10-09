@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
 function Count(){
-cd $1 | ls -1 | wc -l
+count=$(ls -1  $1 | wc -l)
+echo $count
 }
-
 sum=$(Count $1)
 echo $sum
