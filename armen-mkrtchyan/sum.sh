@@ -1,3 +1,5 @@
+#!/bin/bash
+
 read my_limit
 for (( sum=0; $sum < my_limit; ))
 
