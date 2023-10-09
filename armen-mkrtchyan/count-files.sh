@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function f_count(){
     
 cd $1 | ls -1 | wc -l
