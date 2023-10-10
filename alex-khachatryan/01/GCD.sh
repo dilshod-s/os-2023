@@ -21,14 +21,14 @@ __gcd()
 
     if  [ -z "$num1"  ];then
 	echo "bye"
-	exit 0
+	exit 1
     fi
 
     read -p "Second number -> " num2
 
     if [ -z "$num2" ];then
 	echo "bye"
-	exit 0
+	exit 1
     fi
 
     __gcd "$num1" "$num2"

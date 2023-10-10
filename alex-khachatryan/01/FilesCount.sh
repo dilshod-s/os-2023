@@ -1,8 +1,13 @@
 #!/bin/bash
 
-__FilesCount(){
-cd $1 | ls -1 | wc -l
+function FilesCount(){
+
+    if [ -d "$1" ]; then
+	( cd "$1" && ls -1 | wc -l )
+    fi
+
+
 }
 
-Count=$(__FilesCount $1)
-echo $Count
+count=$(FilesCount "$1")
+echo "$count"
