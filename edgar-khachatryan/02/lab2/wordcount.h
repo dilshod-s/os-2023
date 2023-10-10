@@ -7,7 +7,9 @@
 #include <string>
 #include <cstring>
 #include <sstream>
-
+#include <unistd.h>
+#include <fstream>
+#include <fcntl.h>
 
 class WordCount
 {
@@ -19,13 +21,13 @@ private:
     bool countWords;
     bool countLines;
 
-    // false: file, true: std input
+    // false: input, true: file
     bool inputType;
 
     // check if the given value is a .txt format filename and get it in data member fileName
     bool isFileTxt(const char* name);
     // check if given value is a valid flag and update flag according to it
-    int parseFlag(const char* str);
+    bool isFlag(const char* str);
 
     void countFromFile();
     void countFromInput();

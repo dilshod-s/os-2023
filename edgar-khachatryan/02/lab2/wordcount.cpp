@@ -1,5 +1,6 @@
 #include "wordcount.h"
 
+
 WordCount::WordCount() : wordCount(0), lineCount(0), countWords(false),
                          countLines(false), inputType(false), fileName{} {}
 
@@ -31,79 +32,85 @@ bool WordCount::isFileTxt(const char *name)
     return true;
 }
 
-int WordCount::parseFlag(const char *str)
+bool WordCount::isFlag(const char *str)
 {
     // checking if argument is "-w"
     if (str[0] == '-' && str[1] == 'w' && str[2] == '\0')
     {
-        // case -w -w
-        if (countWords)
-            return 1;
-
         countWords = true;
-        return 0;
+        return true;
     }
 
     // checking if argument is "-l"
     if (str[0] == '-' && str[1] == 'l' && str[2] == '\0')
     {
-        // case -l -l
-        if (countLines)
-            return 1;
-
         countLines = true;
-        return 0;
+        return true;
     }
 
-    return 1;
+    return false;
 }
 
 
 void WordCount::countFromFile()
 {
     // open file
-    std::ifstream file(fileName);
+    const char* cstrFileName = fileName.c_str();
+    int fd = open(cstrFileName, O_RDONLY);
 
-    if (!file.is_open())
+    if (fd == -1)
     {
         std::cerr << "Error opening file: " << fileName << std::endl;
         exit(1);
     }
 
-    // this part counts lines and words in the given file
-    std::string line;
-    while (std::getline(file, line))
-    {
-        ++lineCount;
-        std::istringstream stream(line);
-        std::string word;
+    // buffer to read data
+    char buffer[1024];
+    ssize_t bytesRead;
 
-        while (stream >> word)
-            ++wordCount;
+    // read while input
+    while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0)
+    {
+        for (ssize_t i = 0; i < bytesRead; ++i)
+        {
+            if (buffer[i] == '\n')
+                ++lineCount;
+
+            // space, tab, or newline characters are word separators
+            if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
+                ++wordCount;
+        }
     }
 
-    file.close();
+    if (bytesRead == -1)
+    {
+        std::cerr << "Error reading file. Exiting...\n";
+        exit(1);
+    }
+
+    // close the file descriptor
+    close(fd);
 }
 
 void WordCount::countFromInput()
 {
-    std::cout << "Type here your text (/exit in new line to stop): " << std::endl;
-    std::string line;
+    char buffer[1024];
+    ssize_t bytesRead;
 
-    // get line from standard input and count words and lines, exit when ends
-    while (std::getline(std::cin, line))
+    // read while input
+    while ((bytesRead = read(0, buffer, sizeof(buffer))) > 0)
     {
-        if (line == "/exit")
-            return;
+        for (ssize_t i = 0; i < bytesRead; ++i)
+        {
+            if (buffer[i] == '\n')
+                ++lineCount;
 
-        ++lineCount;
-
-        std::istringstream stream(line);
-        std::string word;
-
-        while (stream >> word)
-            ++wordCount;
+            // space, tab, or newline characters are word separators
+            if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
+                ++wordCount;
+        }
     }
+
 }
 
 /*
@@ -112,48 +119,46 @@ void WordCount::countFromInput()
 
 int WordCount::handleArguments(int argc, char *argv[])
 {
-    // example: /wordcount sample.txt
-    if (argc == 2)
+
+    // example: ./wordcount (< file.txt)
+    if (argc == 1)
     {
-        if (!isFileTxt(argv[1]))
-        {
-            if (argv[1][0] != '-' || argv[1][1] != '\0')
-                return 1;
-            inputType = true;
-        }
         countLines = true;
         countWords = true;
         return 0;
     }
 
+    // example: ./wordcount sample.txt
+    // or     : ./wordcount -l (< file.txt)
+    if (argc == 2)
+    {
+        // If a flag, parse. Else check if a filename and set input type. Otherwise, invalid argument passed.
+        if (isFlag(argv[1]))
+            return 0;
+        else if (isFileTxt(argv[1]))
+        {
+            inputType = true;
+            countLines = true;
+            countWords = true;
+            return 0;
+        }
+        else
+            return 1;
+    }
+
     // example: /wordcount -w sample.txt
     if (argc == 3)
     {
-        if (parseFlag(argv[1]))
+        if (!isFlag(argv[1]))
             return 1;
-        if (!isFileTxt(argv[2]))
-        {
-            if (argv[2][0] != '-' || argv[2][1] != '\0')
-                return 1;
-            inputType = true;
-        }
-        return 0;
-    }
 
-    // example: /wordcount -w -l sample.txt
-    if (argc == 4)
-    {
-        if (parseFlag(argv[1]))
-            return 1;
-        if (parseFlag(argv[2]))
-            return 1;
-        if (!isFileTxt(argv[3]))
+        if (isFileTxt(argv[2]))
         {
-            if (argv[3][0] != '-' || argv[3][1] != '\0')
-                return 1;
             inputType = true;
+            return 0;
         }
-        return 0;
+        else
+            return 1;
     }
 
     return 1;
@@ -162,7 +167,7 @@ int WordCount::handleArguments(int argc, char *argv[])
 
 void WordCount::startCounting()
 {
-    if (!inputType)
+    if (inputType)
         countFromFile();
     else
         countFromInput();
@@ -170,9 +175,14 @@ void WordCount::startCounting()
 
 void WordCount::printResults() const
 {
+    std::string message{};
+
     if (countWords)
-        std::cout << "Word count: " << wordCount << std::endl;
+        message += "Word count: " + std::to_string(wordCount) + "\n";
 
     if (countLines)
-        std::cout << "Line count: " << lineCount << std::endl;
+        message += "Line count: " + std::to_string(lineCount) + "\n";
+
+    const char* cstrMessage = message.c_str();
+    write(STDOUT_FILENO, cstrMessage, message.length());
 }
