@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
     int errorCode = counter.handleArguments(argc, argv);
     if (errorCode)
     {
-        std::cerr << "Usage: " << argv[0] << " [-w] [-l] [<filename.txt> or [-]]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [-w] [-l] [<] <filename.txt>" << std::endl;
         return 1;
     }
 
