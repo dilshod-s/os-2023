@@ -2,8 +2,11 @@
 
 function f_count(){
     
-cd $1 | ls -1 | wc -l
+if [[ -d "$1" ]]
 
+    then
+    cd $1 | ls -1 | wc -l
+fi
 }
 
 sum=$(f_count $1)
