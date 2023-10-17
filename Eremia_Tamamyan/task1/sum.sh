@@ -1,11 +1,13 @@
 #!/bin/bash
 
 read limit
-
-for ((sum=0;$sum <limit ;))
+sum=0
+while  read -r num 
 do
- read num
-let sum+=num
+ if [[ $sum > $limit ]]
+    then
+        exit
+    fi
+    let sum+=num
 done
-
 echo $sum
