@@ -73,18 +73,17 @@ void WordCount::count()
 
 int WordCount::Prestart(int argc, char *argv[])
 { 
-    // example: ./wordcount (< file.txt)
+    	// ./wordcount (< file.txt)
     if (argc == 1)
     {
         countlines = true;
         countwords = true;
         return 0;
     }
-    // example: ./wordcount sample.txt
-    // or     : ./wordcount -l (< file.txt)
+        //  ./wordcount sample.txt
+	//  ./wordcount -l (< file.txt)
     if (argc == 2)
     {
-        // If a flag, parse. Else check if a filename and set input type. Otherwise, invalid argument passed.
         if (isFlag(argv[1]))
             return 0;
         else if (isTxt(argv[1]))
@@ -98,7 +97,7 @@ int WordCount::Prestart(int argc, char *argv[])
             return 1;
     }
  
-    // example: /wordcount -w sample.txt
+    // -l sample.txt
     if (argc == 3)
     {
         if (!isFlag(argv[1]))
