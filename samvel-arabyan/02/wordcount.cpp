@@ -4,19 +4,11 @@
 WordCount::WordCount() : wordCount(0), lineCount(0), countWords(false),
                          countLines(false), inputType(false), fileName{} {}
 
-
-
-/*
-        Private methods
-                            */
-
 bool WordCount::isFileTxt(const char *name)
 {
-    int i = 0;
-    // go to the end of the string
+    int i=0;
     for (; name[i] != '\0'; ++i){}
 
-    // check if last 4 symbols are ".txt"
     i -= 4;
     if (i <= 0)
         return false;
@@ -25,7 +17,6 @@ bool WordCount::isFileTxt(const char *name)
         || name[i + 2] != 'x' || name[i + 3] != 't')
         return false;
 
-    // convert file name to string
     std::string copyToString(name);
     fileName = copyToString;
 
@@ -34,14 +25,12 @@ bool WordCount::isFileTxt(const char *name)
 
 bool WordCount::isFlag(const char *str)
 {
-    // checking if argument is "-w"
     if (str[0] == '-' && str[1] == 'w' && str[2] == '\0')
     {
         countWords = true;
         return true;
     }
 
-    // checking if argument is "-l"
     if (str[0] == '-' && str[1] == 'l' && str[2] == '\0')
     {
         countLines = true;
@@ -54,7 +43,6 @@ bool WordCount::isFlag(const char *str)
 
 void WordCount::countFromFile()
 {
-    // open file
     const char* cstrFileName = fileName.c_str();
     int fd = open(cstrFileName, O_RDONLY);
 
@@ -64,11 +52,9 @@ void WordCount::countFromFile()
         exit(1);
     }
 
-    // buffer to read data
     char buffer[1024];
     ssize_t bytesRead;
 
-    // read while input
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0)
     {
         for (ssize_t i = 0; i < bytesRead; ++i)
@@ -76,7 +62,6 @@ void WordCount::countFromFile()
             if (buffer[i] == '\n')
                 ++lineCount;
 
-            // space, tab, or newline characters are word separators
             if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
                 ++wordCount;
         }
@@ -88,7 +73,6 @@ void WordCount::countFromFile()
         exit(1);
     }
 
-    // close the file descriptor
     close(fd);
 }
 
@@ -97,7 +81,6 @@ void WordCount::countFromInput()
     char buffer[1024];
     ssize_t bytesRead;
 
-    // read while input
     while ((bytesRead = read(0, buffer, sizeof(buffer))) > 0)
     {
         for (ssize_t i = 0; i < bytesRead; ++i)
@@ -105,7 +88,6 @@ void WordCount::countFromInput()
             if (buffer[i] == '\n')
                 ++lineCount;
 
-            // space, tab, or newline characters are word separators
             if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
                 ++wordCount;
         }
@@ -113,14 +95,11 @@ void WordCount::countFromInput()
 
 }
 
-/*
-        Public methods
-                            */
+
 
 int WordCount::handleArguments(int argc, char *argv[])
 {
 
-    // example: ./wordcount (< file.txt)
     if (argc == 1)
     {
         countLines = true;
@@ -128,11 +107,8 @@ int WordCount::handleArguments(int argc, char *argv[])
         return 0;
     }
 
-    // example: ./wordcount sample.txt
-    // or     : ./wordcount -l (< file.txt)
     if (argc == 2)
     {
-        // If a flag, parse. Else check if a filename and set input type. Otherwise, invalid argument passed.
         if (isFlag(argv[1]))
             return 0;
         else if (isFileTxt(argv[1]))
@@ -146,7 +122,6 @@ int WordCount::handleArguments(int argc, char *argv[])
             return 1;
     }
 
-    // example: /wordcount -w sample.txt
     if (argc == 3)
     {
         if (!isFlag(argv[1]))
