@@ -7,14 +7,16 @@ int countWords(int file_descriptor) {
     char symbol;
     bool proverka = false;
     int wordCount = 0;
+    char previous;
 
     while (read(file_descriptor, &symbol, 1) > 0) {
         if (isalnum(symbol)) {
             proverka = true;
-        } else if (proverka) {
+        } else if (proverka && (previous != ' ' || previous != '\n' || previous != '\t')) {
             proverka = false;
             wordCount++;
         }
+        previous = symbol;
     }
 
     if (proverka) {
@@ -41,4 +43,3 @@ int countLines(int file_descriptor) {
     }
     return lineCount;
 }
-
