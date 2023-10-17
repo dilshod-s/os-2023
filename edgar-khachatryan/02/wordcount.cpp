@@ -69,6 +69,7 @@ void WordCount::countFromFile()
     ssize_t bytesRead;
 
     // read while input
+    char last = ' ';
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0)
     {
         for (ssize_t i = 0; i < bytesRead; ++i)
@@ -77,8 +78,11 @@ void WordCount::countFromFile()
                 ++lineCount;
 
             // space, tab, or newline characters are word separators
-            if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
+            if ((buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n') &&
+               (last != ' ' && last != '\t' && last != '\n'))
                 ++wordCount;
+
+            last = buffer[i];
         }
     }
 
@@ -98,6 +102,7 @@ void WordCount::countFromInput()
     ssize_t bytesRead;
 
     // read while input
+    char last = ' ';
     while ((bytesRead = read(0, buffer, sizeof(buffer))) > 0)
     {
         for (ssize_t i = 0; i < bytesRead; ++i)
@@ -106,8 +111,11 @@ void WordCount::countFromInput()
                 ++lineCount;
 
             // space, tab, or newline characters are word separators
-            if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
+            if ((buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n') &&
+                (last != ' ' && last != '\t' && last != '\n'))
                 ++wordCount;
+
+            last = buffer[i];
         }
     }
 
