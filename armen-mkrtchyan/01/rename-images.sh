@@ -1,9 +1,17 @@
 #!/bin/bash
 
-for f_name in $(ls *.jpg)
-
- do
-   tmp=$(stat $f_name -c "%y" | awk '{print $1}') 
-   mv ./${f_name} ./${tmp}-${f_name}.jpg
-   
+for image in *.jpg; 
+    do
+    
+    if [[ -f "$image" ]]
+        then
+            birth_day=$(stat -c %y "$image" | cut -d ' ' -f 1)
+            new_name="${birth_day}-${image}"
+        
+    if [[ ! -e "$new_name" ]]
+        then
+            mv "$image" "$new_name"
+    
+    fi
+  fi
 done
