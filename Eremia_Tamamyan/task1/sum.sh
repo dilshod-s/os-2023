@@ -1,7 +1,9 @@
 #!/bin/bash
 
 read limit
+
 sum=0
+
 while  read -r num 
 do
  if [[ $sum > $limit ]]
@@ -10,4 +12,5 @@ do
     fi
     let sum+=num
 done
+
 echo $sum
