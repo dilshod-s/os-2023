@@ -54,9 +54,9 @@ void WordCount::count()
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0)
         for (int i = 0; i < bytesRead; ++i)
             if (buffer[i] == '\n')
-                ++lineCount;
+                ++line_c;
             else  if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
-                ++wordCount;
+                ++word_c;
  
     if(input) 
 	   {
