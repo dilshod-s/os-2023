@@ -1,6 +1,6 @@
 #ifndef WORDCOUNT_H
 #define WORDCOUNT_H
 
-int Wordcount(const char* filename);
-int Linecount(const char* filename);
+int Wordcount(int fd);
+int Linecount(int fd);
 #endif

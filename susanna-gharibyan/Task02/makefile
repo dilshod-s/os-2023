@@ -1,16 +1,13 @@
-CC = gcc
-CFLAGS = -Wall -Wextra
+CXX = gcc
+CXXFLAGS = -Wall
 
-all: wordcount
+SRC_FILES = main.c wordcount.c
+TARGET = wordcount
 
-wordcount: main.o wordcount.o
-	$(CC) $(CFLAGS) -o wordcount main.o wordcount.o
+all: $(TARGET)
 
-main.o: main.c wordcount.h
-	$(CC) $(CFLAGS) -c main.c
-
-wordcount.o: wordcount.c wordcount.h
-	$(CC) $(CFLAGS) -c wordcount.c
+$(TARGET): $(SRC_FILES)
+	$(CXX) $(CXXFLAGS) $(SRC_FILES) -o $(TARGET)
 
 clean:
-	rm -f wordcount main.o wordcount.o
+	rm -f $(TARGET)
