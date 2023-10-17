@@ -6,9 +6,9 @@ sum=0
 
 while  read -r num 
 do
- if [[ $sum > $limit ]]
+ if [[ $sum -ge $limit ]]
     then
-        exit
+        break
     fi
     let sum+=num
 done
