@@ -16,7 +16,7 @@ WordCount::WordCount() : word_c(0), line_c(0), countwords(false),
 
 bool WordCount::isTxT(const char *inputed_file)
 {
-    std:::size_t i = 0;
+    std::size_t i = 0;
     while (inputed_file[i] != '\0')
     	++i;
     if (i <= 4)
@@ -41,22 +41,37 @@ void WordCount::count()
     if(input)
     {
    	const char* cstr = file.c_str();
-    	fd = open(cstrFileName, O_RDONLY);
+    	fd = open(cstr, O_RDONLY);
     	if (fd == -1)
    	 {
-        	std::cerr << "Error opening file: " << fileName << std::endl;
+        	std::cerr << "Error opening file: " << file << std::endl;
        		exit(1);
     	 }
     }
     char buffer[1024];
     int bytesRead;
- 
+    bool inword = false;
+    
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0)
+    {
         for (int i = 0; i < bytesRead; ++i)
+        {
+     
             if (buffer[i] == '\n')
-                ++lineCount;
-            else  if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
-                ++wordCount;
+                ++line_c;
+            if ( buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n')
+                inword = false;
+            else if(!inword)
+            {
+            	++word_c;
+            	inword = true;
+            }
+                
+           // b = buffer[i];
+        }
+            
+    }
+               
  
     if(input) 
 	   {
@@ -66,7 +81,7 @@ void WordCount::count()
 		 exit(1);
 		}
 		
-		close(fd)
+		close(fd);
 	  }	
     
 }
@@ -87,7 +102,7 @@ int WordCount::Prestart(int argc, char *argv[])
         // If a flag, parse. Else check if a filename and set input type. Otherwise, invalid argument passed.
         if (isFlag(argv[1]))
             return 0;
-        else if (isTxt(argv[1]))
+        else if (isTxT(argv[1]))
         {
             input = true;
             countlines = true;
@@ -104,7 +119,7 @@ int WordCount::Prestart(int argc, char *argv[])
         if (!isFlag(argv[1]))
             return 1;
  
-        if (isTxt(argv[2]))
+        if (isTxT(argv[2]))
         {
             input = true;
             return 0;

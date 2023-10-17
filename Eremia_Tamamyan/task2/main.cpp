@@ -1,4 +1,4 @@
-#include "wordcount.h"
+#include "WordCount.h"
  
 int main(int argc, char* argv[])
 {
@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
  
     counter.count();
  
-    counter.prints();
+    counter.print();
  
     return 0;
 }
