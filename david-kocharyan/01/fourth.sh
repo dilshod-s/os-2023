@@ -1,24 +1,19 @@
 #!/bin/bash
 
-for file in *.jpg; 
+for file in *.jpg
 do
-  if [ -f "$file" ]; 
-  then
-    
-    data=$(stat -c "%y" "$file" | cut -d ' ' -f1)
-
-    delete_hyphen=$(echo "$data" | tr -d '-')
-
-    new_jpg="${delete_hyphen}-${file}"
-
-    if [ ! -e "$new_jpg" ]; 
+    if [[ $file =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}-.*\.jpg$ || $file =~ ^[0-9]{4}-[0-9]{1}-[0-9]{2}-.*\.jpg$ || $file =~ ^[0-9]{4}-[0-9]{2}-[0-9]{1}-.*\.jpg$ || $file =~ ^[0-9]{4}-[0-9]{1}-[0-9]{1}-.*\.jpg$ ]]
     then
-      mv "$file" "$new_jpg"
-      echo "new name: $file -> $new_jpg"
-      
+        echo "$file renamed."
     else
-      echo " already exist $new_jpg"
+        
+        date=$(stat -c %w $file | cut -d ' ' -f1)
+    
+        
+        new_name="${date}-${file}"
+        mv $file $new_name
+
+        echo "renamed $file to $new_name"
     fi
-  fi
 done
 

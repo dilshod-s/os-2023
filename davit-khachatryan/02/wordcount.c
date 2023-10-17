@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 int count_lines(int fd) {
-    int lines = 0;
+    int lines = 1;
     char buffer;
     int read_status;
 

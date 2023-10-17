@@ -1,8 +1,14 @@
-#!/bin/bash
+#!/bin/bash 
 
-function count_files(){
-cd $1 | ls -1 | wc -l
-}
+if [[ -z "$1" ]]; then
+    echo "Usage: $0 <directory>"
+    exit 1
+fi
+directory="$1"
 
-sum=$(count_files $1)
-echo $sum
+if [[ ! -d "$directory" ]]; then
+    echo "Error: '$directory' is not a valid directory."
+    exit 1
+fi
+
+echo  $(ls -l "$directory" | grep -c ^-)"
