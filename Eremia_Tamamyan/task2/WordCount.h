@@ -20,7 +20,7 @@ private:
     bool countlines;
     bool input;
  
-    bool isTxt(const char* name);
+    bool isTxT(const char* name);
     bool isFlag(const char* str);
  
     void count();
