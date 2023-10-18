@@ -8,7 +8,8 @@ int main(int argc, char* argv[])
     int errorCode = counter.handleArguments(argc, argv);
     if (errorCode)
     {
-        std::cerr << "Usage: " << argv[0] << " [-w] [-l] [<] <filename.txt>" << std::endl;
+        std::cerr << "Usage:   " << argv[0] << " <-w|-l> [filename.txt]" << std::endl;
+        std::cerr << "Example: ./wordcount -w file.txt | ./wordcount -l < file.txt" << std::endl;
         return 1;
     }
 

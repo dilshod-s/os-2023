@@ -29,9 +29,6 @@ private:
     // check if given value is a valid flag and update flag according to it
     bool isFlag(const char* str);
 
-    void countFromFile();
-    void countFromInput();
-
 public:
     WordCount();
 
