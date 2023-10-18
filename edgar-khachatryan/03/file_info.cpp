@@ -129,7 +129,7 @@ void print_file_info(const char *input)
 
     std::cout << "Size: \t\t\t" << file_info.st_size << " Bytes\n";
     std::cout << "Block size: \t\t" << file_info.st_blksize << " Bytes\n";
-    std::cout << "Number of blocks: \t" << file_info.st_blocks << "\n";
+    std::cout << "Number of blocks: \t" << file_info.st_blocks/8 << "\n";
     std::cout << "Permissions: \t\t" << parsePermissions(file_info.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) << "\n";
 
     // Convert time to a string
