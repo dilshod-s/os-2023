@@ -2,10 +2,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <ctime>
+#include <filesystem>
 
 int decimalToOctal(int dec);
 std::string parsePermissions(mode_t decimal);
-void print_file_info(const char *filename);
+void print_file_info(const char *input);
+bool isPath_(const std::string& str);
 
 
 int main(int argc, char *argv[])
@@ -21,6 +23,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+
+bool isPath_(const std::string& str)
+{
+    return str.find('/') != std::string::npos ;
+}
 
 int decimalToOctal(int dec)
 {
@@ -72,12 +79,12 @@ std::string parsePermissions(mode_t decimal)
     return res;
 }
 
-void print_file_info(const char *filename)
+void print_file_info(const char *input)
 {
     struct stat file_info{};
 
     // Use stat to get information about the file
-    if (stat(filename, &file_info) == -1)
+    if (stat(input, &file_info) == -1)
     {
         std::cerr << "No such file or directory\n";
         exit(1);
@@ -102,8 +109,24 @@ void print_file_info(const char *filename)
     else
         std::cout << "unknown file type\n";
 
-    std::cout << "Name: \t\t\t" << filename << "\n";
-    std::cout << "Path: \t\t\t" << getcwd(nullptr, 0) << "/" << filename << "\n";
+
+    if (isPath_(input))
+    {
+        // get file name from path
+        std::filesystem::path filename(input);
+        filename = filename.filename();
+        // convert path to string
+        std::string strName(filename);
+        // print results
+        std::cout << "Name: \t\t\t" << strName << "\n";
+        std::cout << "Path: \t\t\t" << input << "\n";
+    }
+    else
+    {
+        std::cout << "Name: \t\t\t" << input << "\n";
+        std::cout << "Path: \t\t\t" << getcwd(nullptr, 0) << "/" << input << "\n";
+    }
+
     std::cout << "Size: \t\t\t" << file_info.st_size << " Bytes\n";
     std::cout << "Block size: \t\t" << file_info.st_blksize << " Bytes\n";
     std::cout << "Number of blocks: \t" << file_info.st_blocks << "\n";
