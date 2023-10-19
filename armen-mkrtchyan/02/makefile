@@ -15,4 +15,4 @@ wordcount.o: wordcount.c wordcount.h
 	$(CC) $(CFLAGS) -c wordcount.c
 
 clean:
-	rm -f wordcount main.o wordcount.o
+	rm -f wordcount -o main.o -o wordcount.o
