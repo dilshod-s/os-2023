@@ -6,13 +6,13 @@ CFLAGS = -Wall -Wextra
 all: wordcount
 
 wordcount: main.o wordcount.o
-	$(CC) $(CFLAGS) -o wordcount main.o wordcount.o
+ $(CC) $(CFLAGS) -o wordcount main.o wordcount.o
 
-main.o: main.c wordcount.h
-	$(CC) $(CFLAGS) -c main.c
+main.o: main.c 
+ $(CC) $(CFLAGS) -c main.c
 
-wordcount.o: wordcount.c wordcount.h
-	$(CC) $(CFLAGS) -c wordcount.c
+wordcount.o: wordcount.c 
+ $(CC) $(CFLAGS) -c wordcount.c
 
 clean:
-	rm -f wordcount -o main.o -o wordcount.o
+ rm *.o wordcount
