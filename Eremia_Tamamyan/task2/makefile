@@ -1,9 +1,9 @@
 CXX = g++
-CXXFLAGS = -std = c++17 -Wall
+CXXFLAGS = -std=c++17 -Wall
  
 
 all: main.o WordCount.o
-	$(CXX)$(CXXFLAGS) main.o WordCount.o -o wordcount
+	$(CXX) $(CXXFLAGS) main.o WordCount.o -o wordcount
 
 main.o:	main.cpp
 	$(CXX) -c main.cpp

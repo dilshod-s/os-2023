@@ -23,12 +23,13 @@ private:
     bool isTxT(const char* name);
     bool isFlag(const char* str);
  
-    void count();
+    
  
 public:
     WordCount();
 
-    int Prestart(int argc, char* argv[]);s
+    void count();
+    int Prestart(int argc, char* argv[]);
     void print();
  
 };
