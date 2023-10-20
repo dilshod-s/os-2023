@@ -1,15 +1,20 @@
-all: wordcount
-
-wordcount: main.o wordcount.o
+all: wordcount main
 	gcc main.o wordcount.o -o wordcount
 
-
-main.o: main.c
-	gcc -c main.c
-
-
-wordcount.o: wordcount.c
+wordcount: 
 	gcc -c wordcount.c
+
+main: 
+	gcc -c main.c
 
 clean:
 	rm -f *.o wordcount
+
+
+
+
+
+
+
+
+

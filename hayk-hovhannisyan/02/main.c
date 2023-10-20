@@ -4,8 +4,7 @@
 #include "wordcount.h"
 int main(int argc,char* argv[]){
     bool countline = false;
-    bool countword= false;
-
+    bool countword= false; 
     for(int i = 1;i<argc;++i){
         if(argv[i][0] == '-'){
             if(argv[i][1] == 'l'){
@@ -16,8 +15,13 @@ int main(int argc,char* argv[]){
             }
         }
     }
-    int fd = open(argv[argc-1],O_RDONLY);
-
+    int fd;
+    if(argc == 2){
+        fd = 0;
+    }
+    else if(argc == 3){
+        fd = open(argv[2],O_RDONLY);
+    }
     if(fd == -1) {
         printf("Error\n");
     }
@@ -27,5 +31,4 @@ int main(int argc,char* argv[]){
      else if(countword){
         printf("%d\n",countWords(fd));
     }    
-    
 }
