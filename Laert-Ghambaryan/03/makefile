@@ -1,14 +1,13 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall
+CXXFLAGS = -Wall
 
-SRC_FILES = file_info.cpp
+SRC_FILES = main.cpp
 TARGET = file_info
 
 all: $(TARGET)
 
 $(TARGET): $(SRC_FILES)
- $(CXX) $(CXXFLAGS) $(SRC_FILES) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(SRC_FILES) -o $(TARGET)
 
 clean:
- rm -f $(TARGET)
-
+	rm -f $(TARGET)

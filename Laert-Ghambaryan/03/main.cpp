@@ -37,14 +37,14 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Name: " << filename << std::endl;
-
+    std::cout << "Path: " << getcwd(nullptr, 0) << "/" << filename << "\n";
     char permissions[10];
     snprintf(permissions, sizeof(permissions), "%o", file_info.st_mode & 0777);
     std::cout << "Permissions: " << permissions << std::endl;
 
     std::cout << "Size: " << file_info.st_size << " bytes" << std::endl;
     std::cout << "Block Size: " << file_info.st_blksize << " bytes" << std::endl;
-    std::cout << "Number of Blocks: " << file_info.st_blocks << std::endl;
+    std::cout << "Number of Blocks: " << file_info.st_blocks/8 << std::endl;
 
     std::cout << "Creation Time: " << std::ctime(&file_info.st_ctime);
     std::cout << "Last Modification Time: " << std::ctime(&file_info.st_mtime);
