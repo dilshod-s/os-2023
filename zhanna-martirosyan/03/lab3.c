@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     const char *path = argv[1]; // path = указатель на второй аргумент командной строки (полный путь к файлу)
     struct stat info; //структура, которая будет содержать информацию о файле
 
-    if (stat(path, &info) == -1) { //функция stat для получения информации о файле по пути, который указан в path
+    if (lstat(path, &info) == -1) { //функция stat для получения информации о файле по пути, который указан в path
         perror("stat");
         return 1;
     }
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     printf("Path: %s\n", path);
     printf("Size: %ld Bytes\n", (long)info.st_size);
     printf("Block Size: %ld Bytes\n", (long)info.st_blksize);
-    printf("Number of Blocks: %ld\n", (long)info.st_blocks);
+    printf("Number of Blocks: %ld\n", (long)info.st_blocks/8);
     printf("Access Rights: %o\n", info.st_mode & 0777);
     //Побитовое "И" с 0777 помогает извлечь только права доступа,
     // игнорируя другие биты, которые могут содержать доп информацию (допустим, информацию о типе файла).
