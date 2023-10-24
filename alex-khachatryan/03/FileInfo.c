@@ -37,10 +37,19 @@ int main(int argc, char *argv[]) {
 
     printf("Type: %s\n", file_type);
     printf("Name: %s\n", file_name);
-    printf("Path: %s\n", file_path);
+    
+    if (strchr(file_path, '/') != NULL)
+    {
+      printf("Path: %s\n", file_path);
+    }
+    else
+    {
+      char buf[1024];
+      printf("Path: %s/%s\n", getcwd(buf, sizeof(buf)), file_name);
+    }
     printf("Size: %ld Bytes\n", (long)file_stat.st_size);
     printf("Block size: %ld Bytes\n", (long)file_stat.st_blksize);
-    printf("Number of Blocks: %ld\n", (long)file_stat.st_blocks);
+    printf("Number of Blocks: %ld\n", (long)file_stat.st_blocks/8);
     printf("File Permissions: %o\n", file_stat.st_mode & 0777);
     printf("Creation Time: %s", ctime(&file_stat.st_ctime));
     printf("Last Modification Time: %s", ctime(&file_stat.st_mtime));
