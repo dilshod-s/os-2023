@@ -10,10 +10,14 @@ fi
 
 ans=0
 
-while [[ $ans < $1 ]]
+while read -r num
 do
-	read num;	
-	((ans+=num))
+    ((ans+=num))
+    if [[ $1 -le $ans ]]
+    then
+        echo $ans
+        exit 1
+    fi
 done
 
 echo $ans
