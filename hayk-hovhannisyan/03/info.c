@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     printf("Path: %s\n", realpath(argv[1], NULL));
     printf("Size: %ld байт\n", fileStat.st_size);
     printf("Block size: %ld байт\n", fileStat.st_blksize);
-    printf("Number of blocks: %ld\n", fileStat.st_blocks);
+    printf("Number of blocks: %ld\n", fileStat.st_blocks/8);
     printf("Permissions %o\n", fileStat.st_mode & 0777);
 
     struct tm createdTime;
