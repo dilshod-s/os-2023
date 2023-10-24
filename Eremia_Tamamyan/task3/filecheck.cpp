@@ -52,13 +52,13 @@ std::string FileInfo::size(const struct stat &file_info) {
 }
 void FileInfo::path_and_name(const std::string &file_path) {
   std::filesystem::path filename(file_path.c_str());
-  std::filesystem::path canonicalPath = std::filesystem::canonical(filename);
+  std::filesystem::path absolutePath = std::filesystem::absolute(filename);
   filename = filename.filename();
   // convert path to string
   std::string strName(filename);
   // print results
   std::cout << "Name: \t" << strName << "\n";
-  std::cout << "Canonical Path: " << canonicalPath << std::endl;
+  std::cout << " Path: " << absolutePath << std::endl;
 }
 std::string FileInfo::create_time(const struct stat &file_info) {
   std::string creation_time = "creation time: ";
@@ -108,7 +108,7 @@ std::string FileInfo::file_type(const struct stat &file_info) {
 }
 void FileInfo::PrintFileInfo() {
   struct stat file_info;
-  if (stat(file_path.c_str(), &file_info) == -1) {
+  if (lstat(file_path.c_str(), &file_info) == -1) {
     std::cout << "Error: File not found\n";
     exit(1);
   }

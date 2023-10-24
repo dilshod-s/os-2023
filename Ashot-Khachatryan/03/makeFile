@@ -1,7 +1,7 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall
+CXXFLAGS = -Wall
 
-SRC_FILES = file_info.cpp
+SRC_FILES = main.cpp
 TARGET = file_info
 
 all: $(TARGET)
