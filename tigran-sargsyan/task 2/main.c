@@ -5,10 +5,6 @@
 #include <errno.h>
 #include "wordcount.h"
 
-void usage() {
-    printf("Usage: wordcount [-w] [-l] [file]\n");
-}
-
 int main(int argc, char *argv[]) {
     int opt, fd;
     Counters cnt = {0, 0};
@@ -22,7 +18,7 @@ int main(int argc, char *argv[]) {
                 count_lines = 1;
                 break;
             default:
-                usage();
+                printf("Usage: wordcount [-w] [-l] [file]\n");
                 exit(EXIT_FAILURE);
         }
     }
