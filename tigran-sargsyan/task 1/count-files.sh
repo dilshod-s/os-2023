@@ -2,8 +2,8 @@
 
 count_files() {
     local dir=$1 
-    local count=$(ls -1 "$dir" | wc -l) //подсчет строк в dir
-    echo "$count" //like_return
+    local count=$(ls -1 "$dir" | wc -l) 
+    echo "$count" 
 }
 
-count_files "$1" //call_function
+count_files "$1" 
