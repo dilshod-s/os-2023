@@ -10,7 +10,7 @@ unsigned count_words(int fd){
     char buffer[1024];
     int read_status;
 
-    while(read_status = read(fd, &buffer, 1) > 0){
+    while(read_status = read(fd, buffer, 1) > 0){
         
         for(int i = 0; i < read_status; ++i){
              
