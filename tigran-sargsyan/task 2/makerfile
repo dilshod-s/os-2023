@@ -1,6 +1,5 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
-LDFLAGS = main.c wordcount.c
 
 all: wordcount
 
