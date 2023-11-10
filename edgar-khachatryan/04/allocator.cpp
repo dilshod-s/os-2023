@@ -38,7 +38,7 @@ struct MemoryAllocator
         }
     }
 
-    int free(Memory *memory, void *ptr)
+    int free(Memory* memory, void* ptr)
     {
         long pageid = static_cast<char*>(ptr) - static_cast<char*>(memory->data);
         auto offset = pageid % PGSIZE;
@@ -111,7 +111,7 @@ int main()
     allocator.printPageInfo(&memory, 0, 10);
 
     int freed_bytes = allocator.free(&memory, ptr2);
-    std::cout << "ptr1 freed.\tBytes freed: " << freed_bytes << std::endl;
+    std::cout << "ptr2 freed.\tBytes freed: " << freed_bytes << std::endl;
     allocator.printPageInfo(&memory, 0, 10);
 
     s = 512;
