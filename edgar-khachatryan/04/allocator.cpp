@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 
 constexpr size_t PGSIZE  = 256;   // 2 ^  8;
 constexpr size_t MEMSIZE = 65536; // 2 ^ 16;
@@ -15,13 +14,16 @@ struct MemoryAllocator
 
     void* alloc(Memory* memory, size_t size)
     {
-        int pagesToAllocate = static_cast<int>((size % PGSIZE) ? (size / PGSIZE + 1) : (size / PGSIZE));
-        int currentCount = 0, i;
+        size_t pagesToAllocate = static_cast<size_t>((size % PGSIZE) ? (size / PGSIZE + 1) : (size / PGSIZE));
+        size_t currentCount = 0, i;
 
         for (i = 0; i < PGCOUNT; ++i)
         {
             if (memory->data[i] == 0)
                 ++currentCount;
+            else
+            	currentCount = 0;
+            
             if (currentCount == pagesToAllocate)
                 break;
         }
@@ -30,9 +32,9 @@ struct MemoryAllocator
             return nullptr; // Allocation failed.
         else
         {
-            int index = i - pagesToAllocate + 1;
+            size_t index = i - pagesToAllocate + 1;
             memory->data[index] = 1;
-            for (int j = 1; j < pagesToAllocate; ++j)
+            for (size_t j = 1; j < pagesToAllocate; ++j)
                 memory->data[index+j] = 2;
             return static_cast<void*>(memory->data + PGSIZE*index);
         }
@@ -47,7 +49,7 @@ struct MemoryAllocator
         if (ptr == memory->data || offset || memory->data[pageid] != 1)
             return 0;
 
-        int bytesFreed = PGSIZE;
+        size_t bytesFreed = PGSIZE;
         memory->data[pageid] = 0;
         ++pageid;
 
@@ -63,7 +65,7 @@ struct MemoryAllocator
 
     void clean(Memory* memory)
     {
-        for (int i = 1; i < PGCOUNT; ++i)
+        for (size_t i = 1; i < PGCOUNT; ++i)
             memory->data[i] = 0;
     }
 
