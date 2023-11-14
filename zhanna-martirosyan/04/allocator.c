@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #define MEMSIZE 65536  //размер буфера памяти
 
@@ -64,6 +65,9 @@ void free(struct Memory *mem, void *ptr) {
         if ((void *)current + sizeof(struct Block) == ptr) {
             //если указатель + размер блока == указатель на нужный блок, то отмечаем, что блок теперь свободен
             current->free = 1;
+            //обнуляем границы в массиве boundaries
+            memset(current->boundaries, 0, sizeof(size_t) * current->numAllocatedBlocks);
+            current->numAllocatedBlocks = 0;
             return;
         }
         current = current->next; //переходим к следующему блоку
@@ -76,6 +80,9 @@ void clean(struct Memory* mem)
 
     while (current) {
         current->free = 1;
+        //обнуляем границы в массиве boundaries
+        memset(current->boundaries, 0, sizeof(size_t) * current->numAllocatedBlocks);
+        current->numAllocatedBlocks = 0;
         current = current->next; //переходим к следующему блоку
     }
 }
