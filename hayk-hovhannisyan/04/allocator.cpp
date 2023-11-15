@@ -3,7 +3,7 @@
 
 #define MEMSIZE (1 << 16)
 #define PGSIZE (1 << 8)
-
+#define PGCOUNT (MEMSIZE/PGSIZE)
 struct Memory {
     char buffer[MEMSIZE];
 };
@@ -22,8 +22,14 @@ int address2index(int addr) {
 }
 
 void *alloc(struct Memory *mem, size_t sz) {
+    int count_of_pages;
     if (sz > PGSIZE) {
-        int count_of_pages = sz / PGSIZE;
+        if(sz%PGSIZE == 0){
+             count_of_pages = sz / PGSIZE;
+        }
+        else{
+             count_of_pages = (sz / PGSIZE) + 1;
+        }
         int count_of_emptypgs = 0;
         bool found_sequence = false;                
         int i = 1;
@@ -41,9 +47,10 @@ void *alloc(struct Memory *mem, size_t sz) {
             }
         }
 
-        if (found_sequence) {            
-            for (int l = i - count_of_pages + 1; l <= i; ++l) {
-                mem->buffer[l] = 1;
+        if (found_sequence) {
+            mem->buffer[i - count_of_pages + 1] = 1;            
+            for (int l = i - count_of_pages + 2; l <= i; ++l) {
+                mem->buffer[l] = 2;
             }            
             int addr = index2address(i - count_of_pages + 1);
             return &mem->buffer[addr];
@@ -53,7 +60,7 @@ void *alloc(struct Memory *mem, size_t sz) {
     }
      else {
         int i = 1;
-        for (; i < MEMSIZE; i++) {
+        for (; i < PGCOUNT; i++) {
             if (mem->buffer[i] == 0) {
                 break;
             }
@@ -64,21 +71,28 @@ void *alloc(struct Memory *mem, size_t sz) {
     }
 }
 
-
+void print( Memory* mem){
+    for(int i  = 0;i<10;++i){
+        std::cout << (int)mem->buffer[i] << " ";
+    }
+}
 int clean(struct Memory *mem) {
     memset(&(mem->buffer[1]), 0, MEMSIZE - 1);
     return 0;
 }
 
-int free(Memory* mem,Memory* ptr){
-    if ((size_t) ptr % PGSIZE != 0) {
-        return -1;
-    }
+int free(Memory* mem,void* ptr){
     int index = address2index((int) ((char*)ptr -  mem->buffer));
     int i = index;
-    while(i < MEMSIZE && mem->buffer[i]!=0 ){
+    if ((size_t) ptr % PGSIZE != 0 && mem->buffer[i]!=1) {
+        return -1;
+    }
+    mem->buffer[i] = 0;
+    for(++i;i<PGCOUNT;++i){
+        if(mem->buffer[i] != 2){
+            break;
+        }
         mem->buffer[i] = 0;
-        ++i;
     }
     return 0;
 }
@@ -93,12 +107,13 @@ int main() {
     ptr = alloc(&mem, 128);
     printf("Payload // pointer = %lx\n", (size_t) ptr);
     
-
+     
     ptr = alloc(&mem, 256);
     printf("Payload // pointer = %lx\n", (size_t) ptr);
-    
+    free(&mem,ptr);
 
     ptr = alloc(&mem, 1);
+    
     printf("Payload // pointer = %lx\n", (size_t) ptr);
 
     return 0;
