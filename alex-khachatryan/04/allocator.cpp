@@ -69,17 +69,6 @@ struct MemoryAllocator
             memory->data[i] = 0;
     }
 
-    void printPageInfo(Memory* memory, int lr, int rr)
-    {
-        if (lr > rr)
-            std::swap(lr, rr);
-
-        std::cout << "---------\n";
-        for (int i = lr; i <= rr; ++i)
-            std::cout << i << ":\t" << static_cast<int>(memory->data[i]) << "\n";
-        std::cout << "---------\n";
-    }
-
 };
 
 int main()
@@ -88,7 +77,6 @@ int main()
     MemoryAllocator allocator(&memory);
     std::cout << "Memory begin:\t\t" << static_cast<void*>(memory.data) << std::endl;
 
-    allocator.printPageInfo(&memory, 0, 4);
 
     size_t s = 512;
     void* ptr1 = allocator.alloc(&memory, s);
@@ -110,20 +98,16 @@ int main()
     void* ptr5 = allocator.alloc(&memory, s);
     std::cout << "size: " << s << "\t\tptr5:\t" << ptr5 << std::endl;
 
-    allocator.printPageInfo(&memory, 0, 10);
 
     int freed_bytes = allocator.free(&memory, ptr2);
     std::cout << "ptr2 freed.\tBytes freed: " << freed_bytes << std::endl;
-    allocator.printPageInfo(&memory, 0, 10);
 
     s = 512;
     void* ptr6 = allocator.alloc(&memory, s);
     std::cout << "size: " << s << "\tptr6:\t" << ptr6 << std::endl;
-    allocator.printPageInfo(&memory, 0, 10);
-
     allocator.clean(&memory);
     std::cout << "allocator cleaned!" << std::endl;
-    allocator.printPageInfo(&memory, 0, 4);
+    
 
 
     return 0;
