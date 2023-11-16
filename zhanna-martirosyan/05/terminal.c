@@ -14,10 +14,9 @@ int main() {
         printf("Enter a command: ");
         fflush(stdout);
 
-        fgets(input, sizeof(input), stdin); //читаем команду, будет сохранена команда в input,
+        //читаем команду, будет сохранена команда в input,
         // размер = sizeof(input), читаться команда будет из стандартного ввода. Возвращается указатель на буфер
-
-        if (fgets(input, sizeof(input), stdin) == NULL) {
+        if (fgets(input, sizeof(input), stdin) == NULL) { 
             perror("Error reading input");
             exit(EXIT_FAILURE);
         }
@@ -57,7 +56,7 @@ int main() {
             int status; //тут храним статус о выполнении команды в дочернем процессе
             waitpid(pid, &status, 0); //ждем, когда завершится дочерний процесс. Статус завершения будет храниться в переменной status
 
-            if (WIFEXITED(status)!=0) { //проверяем, завершился ли дочерний процесс нормально
+            if (WIFEXITED(status) != 0) { //проверяем, завершился ли дочерний процесс нормально
                 printf("Command executed successfully. Exit code: %d \n", WEXITSTATUS(status));
             }
             else {
