@@ -4,6 +4,7 @@
 
 constexpr std::size_t metaData = 12;
 constexpr std::size_t blockSize = 256;
+constexpr std::size_t blockCount = 128;
 constexpr std::size_t charArrSize = blockSize - metaData;
 
 struct alignas(8) MemoryBlock {
@@ -11,11 +12,11 @@ struct alignas(8) MemoryBlock {
         Active, Passive
     } state;
     std::size_t bytesAllocated;
-    char data[blockSize - metaData];
+    char data[charArrSize];
 };
 
 struct Memory {
-    std::array<MemoryBlock, blockSize> blocks;
+    std::array<MemoryBlock, blockCount> blocks;
 };
 
 class DummyAllocator {
@@ -71,9 +72,24 @@ public:
 
     void initialize(Memory* memory) {
         for (auto& block : memory->blocks) {
-            block.bytesAllocated = metaData;
+            block.bytesAllocated = 0;
             block.state = MemoryBlock::State::Passive;
-            std::memset(block.data, 0, charArrSize);
+            std::memset(block.data + metaData, 0, charArrSize);
+        }
+    }
+
+    void setBytesAllocated(MemoryBlock* block)
+    {
+        for (auto i = 0; i < block->bytesAllocated; ++i )
+        {
+            block->data[i] = '1';
+        }
+    }
+
+    void printActiveBlocks(Memory* memory) {
+        int count = 0;
+        for ( auto i = 0; i < memory->blocks.size(); ++i) {
+            std::cout << memory->blocks[i].bytesAllocated <<", ";
         }
     }
 
@@ -85,22 +101,30 @@ int main() {
     DummyAllocator allocator;
 
     allocator.initialize(&mem);
-    void* ptr1 = allocator.allocate(&mem, 360);
+    void* ptr1 = allocator.allocate(&mem, 845);
+    allocator.printActiveBlocks(&mem);
+    std::cout << "\n";
 
-    std::cout << "Alignment for a block is -> " << alignof(MemoryBlock) << "\n\n";
+    allocator.free(&mem, ptr1);
+    allocator.printActiveBlocks(&mem);
+    std::cout << "\n";
 
-    if (ptr1 != nullptr) {
-        std::cout << "Memory allocated successfully, address: " << ptr1 << std::endl;
-    } else {
-        std::cout << "Failed to allocate memory" << std::endl;
-    }
+    allocator.free(&mem, static_cast<char*>(ptr1) - blockSize);
+    allocator.printActiveBlocks(&mem);
+    std::cout << "\n";
 
-    if (ptr1 != nullptr) {
-        allocator.free(&mem, ptr1);
-        std::cout << "Memory freed successfully" << std::endl;
-    }
+    allocator.free(&mem, static_cast<char*>(ptr1) - (blockSize * 2));
+    allocator.printActiveBlocks(&mem);
+    std::cout << "\n";
 
-    allocator.clean(&mem);
-    std::cout << "Allocator cleaned successfully..." << std::endl;
+    void* ptr2 = allocator.allocate(&mem, 178);
+    allocator.printActiveBlocks(&mem);
+    std::cout << "\n";
+
+    void* ptr3 = allocator.allocate(&mem, 78);
+    allocator.printActiveBlocks(&mem);
+    std::cout << "\n";
+
+
     return 0;
 }
