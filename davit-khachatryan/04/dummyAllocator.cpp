@@ -7,7 +7,7 @@ constexpr std::size_t blockSize = 256;
 constexpr std::size_t blockCount = 128;
 constexpr std::size_t charArrSize = blockSize - metaData;
 
-struct alignas(8) MemoryBlock {
+struct MemoryBlock {
     enum class State {
         Active, Passive
     } state;
@@ -21,11 +21,10 @@ struct Memory {
 
 class DummyAllocator {
 public:
-    DummyAllocator() {
-    }
+    DummyAllocator() = default;
 
     void* allocate(Memory* memory, std::size_t size) {
-        if (size == 0) { return nullptr; }
+        if (size == 0 ) { return nullptr; }
 
         std::size_t remainingSize = size;
         void* allocatedMemory = nullptr;
