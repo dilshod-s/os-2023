@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #define MEMSIZE 65536  //размер буфера памяти
 
@@ -7,12 +8,12 @@ struct Block{
     size_t size; //размер блока
     int free; //флаг, который показывает свободен ли блок
     struct Block *next; //указатель на следующий блок
-    size_t numAllocatedBlocks; //количество выделенных блоков
-    size_t boundaries[]; //границы выделенных блоков (flexible array member)
 };
 
 struct Memory{
     char buffer[MEMSIZE]; //буфер памяти
+    size_t boundaries[MEMSIZE/sizeof(struct Block) + 1]; //границы выделенных блоков
+    size_t numAllocatedBlocks;
     struct Block *start;  //начало списка блоков
 };
 
@@ -21,7 +22,7 @@ void initMemory(struct Memory *mem) { //инициализация аллока�
     mem->start->size = MEMSIZE - sizeof(struct Block); //устанавливаем размер блока
     mem->start->free = 1; //1, потому что блок свободен
     mem->start->next = NULL; //указатель на следующий блок == null
-    mem->start->numAllocatedBlocks = 0;
+    mem->numAllocatedBlocks = 0;
 }
 
 void *alloc(struct Memory *mem, size_t size) { //выделяем блок памяти(функция получает указатель на структуру и размер выделяемого блока)
@@ -46,8 +47,8 @@ void *alloc(struct Memory *mem, size_t size) { //выделяем блок па�
             }
 
             //обновляем информацию о границах в первом блоке
-            current->numAllocatedBlocks++; //увеличиваем число блоков
-            current->boundaries[current->numAllocatedBlocks - 1] = (size_t)current + sizeof(struct Block); //вычисляет адрес границы, добавляя к адресу начала блока размер самого блока (sizeof(struct Block))
+            mem->numAllocatedBlocks++; //увеличиваем число блоков
+            mem->boundaries[mem->numAllocatedBlocks - 1] = (size_t)current + sizeof(struct Block); //вычисляет адрес границы, добавляя к адресу начала блока размер самого блока (sizeof(struct Block))
             return (char *)current + sizeof(struct Block); //возвразаем на начало нашего нового выделенного блока
         }
 
@@ -64,6 +65,9 @@ void free(struct Memory *mem, void *ptr) {
         if ((void *)current + sizeof(struct Block) == ptr) {
             //если указатель + размер блока == указатель на нужный блок, то отмечаем, что блок теперь свободен
             current->free = 1;
+            //обнуляем границы в массиве boundaries
+            memset(mem->boundaries, 0, sizeof(size_t) * mem->numAllocatedBlocks);
+            mem->numAllocatedBlocks--;
             return;
         }
         current = current->next; //переходим к следующему блоку
@@ -76,8 +80,11 @@ void clean(struct Memory* mem)
 
     while (current) {
         current->free = 1;
+        //обнуляем границы в массиве boundaries
+        memset(mem->boundaries, 0, sizeof(size_t) * mem->numAllocatedBlocks);
         current = current->next; //переходим к следующему блоку
     }
+    mem->numAllocatedBlocks = 0;
 }
 
 int main() {
