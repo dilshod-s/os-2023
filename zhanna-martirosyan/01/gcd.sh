@@ -18,6 +18,6 @@ if [[ -z "$var1" || -z "$var2" ]]
         	break
     	fi
 
-echo "$(gcd var1 var2)"	
+echo "$(gcd $var1 $var2)"	
 
 exit 0

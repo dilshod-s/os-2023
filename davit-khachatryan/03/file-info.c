@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <limits.h>
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -22,10 +23,10 @@ int main(int argc, char *argv[]) {
     char *file_path = argv[1];
     struct stat file_stat;
 
-    if (stat(file_path, &file_stat) == -1) {
-        perror("stat");
+    if (lstat(file_path, &file_stat) == -1 || stat(file_path, &file_stat) == -1) {
+        perror("stat( lstat ) error");
         return 1;
-    }
+    } 
 
     //Determine the file type
     const char *file_type = S_ISREG(file_stat.st_mode) ? "Regular File" :
@@ -41,9 +42,17 @@ int main(int argc, char *argv[]) {
         file_name++;  
     }
 
+    const int MAX_PATH_SIZE = 4096;
+    char resolved_path[ MAX_PATH_SIZE ];
+    if( realpath( file_path, resolved_path) == 0 )
+    {
+        perror("realpath");
+        return 1;
+    }
+
     printf("Type: %s\n", file_type);
     printf("Name: %s\n", file_name);
-    printf("Path: %s\n", file_path);
+    printf("Path: %s\n", resolved_path);
     printf("Size: %ld Bytes\n", (long)file_stat.st_size);
     printf("Block size: %ld Bytes\n", (long)file_stat.st_blksize);
     printf("Number of Blocks: %ld\n", (long)file_stat.st_blocks);
