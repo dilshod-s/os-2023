@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <cstdint>
+#include <unordered_map>
 
 constexpr size_t PAGE_SIZE = 256;
 constexpr size_t MEMORY_SIZE = 65536;
@@ -10,20 +10,22 @@ struct Memory {
     std::vector<char> data;
 
     Memory() : data(MEMORY_SIZE, 0) {
-        data[0] = 1; // Mark first page as reserved
+        // Mark first page as reserved for metadata (hash-map)
+        data[0] = 1;
     }
 };
 
+struct PageMetadata {
+    size_t size;
+    void* address;
+};
+
 struct MyAllocator {
-    struct AllocationInfo {
-        uint32_t size;
-        bool isAllocated;
-    };
+    std::unordered_map<void*, PageMetadata> metadata;
 
-    std::vector<AllocationInfo> allocationTable;
-
-    MyAllocator(Memory* memory) : allocationTable(PAGE_COUNT, {0, false}) {
-        allocationTable[0].isAllocated = true; // Mark first page as reserved
+    MyAllocator(Memory* memory) {
+        // Mark first page as reserved for metadata (hash-map)
+        metadata[&memory->data[0]] = {PAGE_SIZE, nullptr};
     }
 
     void* alloc(Memory* memory, size_t size) {
@@ -31,8 +33,9 @@ struct MyAllocator {
         size_t currentPageCount = 0;
         size_t startPageIndex = 0;
 
-        for (size_t i = 0; i < PAGE_COUNT; ++i) {
-            if (!allocationTable[i].isAllocated) {
+        // Find consecutive free pages for allocation
+        for (size_t i = 1; i < PAGE_COUNT; ++i) {
+            if (memory->data[i * PAGE_SIZE] == 0) {
                 if (currentPageCount == 0) {
                     startPageIndex = i;
                 }
@@ -50,47 +53,36 @@ struct MyAllocator {
             return nullptr; // Allocation failed
         }
 
+        // Mark pages as allocated and update metadata
+        void* allocatedAddress = static_cast<void*>(&memory->data[startPageIndex * PAGE_SIZE]);
         for (size_t j = startPageIndex; j < startPageIndex + pagesToAllocate; ++j) {
-            allocationTable[j].isAllocated = true;
-            allocationTable[j].size = size;
+            memory->data[j * PAGE_SIZE] = 1; // Mark page as allocated
+            metadata[&memory->data[j * PAGE_SIZE]] = {size, allocatedAddress};
         }
 
-        return static_cast<void*>(&memory->data[startPageIndex * PAGE_SIZE]);
+        return allocatedAddress;
     }
 
     int free(Memory* memory, void* ptr) {
-        if (ptr == nullptr) {
-            return 0;
+        auto it = metadata.find(ptr);
+        if (it == metadata.end() || it->second.address != ptr) {
+            return 0; // Invalid pointer or not found in metadata
         }
 
-        auto* startPtr = static_cast<char*>(ptr);
-        size_t pageIndex = (startPtr - &memory->data[0]) / PAGE_SIZE;
-        uint32_t freedBytes = 0;
-
-        if (pageIndex >= PAGE_COUNT || !allocationTable[pageIndex].isAllocated) {
-            return 0; // Invalid pointer or already freed
+        size_t pagesFreed = it->second.size / PAGE_SIZE + (it->second.size % PAGE_SIZE != 0);
+        for (size_t i = 0; i < pagesFreed; ++i) {
+            memory->data[(reinterpret_cast<char*>(ptr) - &memory->data[0]) / PAGE_SIZE * PAGE_SIZE] = 0; // Mark page as free
+            metadata.erase(ptr);
+            ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(ptr) + PAGE_SIZE);
         }
 
-        while (allocationTable[pageIndex].isAllocated) {
-            freedBytes += allocationTable[pageIndex].size;
-            allocationTable[pageIndex].isAllocated = false;
-            allocationTable[pageIndex].size = 0;
-            ++pageIndex;
-        }
-
-        return freedBytes;
+        return it->second.size;
     }
 
-    int clean() {
-        int totalFreedBytes = 0;
-        for (auto& info : allocationTable) {
-            if (info.isAllocated) {
-                totalFreedBytes += info.size;
-                info.isAllocated = false;
-                info.size = 0;
-            }
+    void printMemoryMap() {
+        for (const auto& entry : metadata) {
+            std::cout << "Address: " << entry.second.address << "\tSize: " << entry.second.size << " bytes\n";
         }
-        return totalFreedBytes;
     }
 };
 
@@ -111,12 +103,12 @@ int main() {
     void* pointer3 = allocator.alloc(&memory, size);
     std::cout << "size: " << size << "\tpointer3:\t" << pointer3 << std::endl;
 
-    size = 32;
-    void* pointer4 = allocator.alloc(&memory, size);
-    std::cout << "size: " << size << "\tpointer4:\t" << pointer4 << std::endl;
+    allocator.printMemoryMap();
 
     allocator.free(&memory, pointer2);
-    allocator.clean();
-    
+    std::cout << "Pointer2 freed." << std::endl;
+
+    allocator.printMemoryMap();
+
     return 0;
 }
