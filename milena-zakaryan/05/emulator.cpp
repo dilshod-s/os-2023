@@ -1,67 +1,48 @@
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <vector>
 #include <unistd.h>
-
-#define MAX_COMMAND_LENGTH 1024
-#define MAX_ARGUMENTS 10
-
-void execute_command(char *command) {
-	char *arguments[MAX_ARGUMENTS];
-	int i = 0;
-
-	
-	char *token = strtok(command, " ");
-	while (token != NULL && i < MAX_ARGUMENTS - 1) {
-		arguments[i++] = token;
-		token = strtok(NULL, " ");
-	}
-	arguments[i] = NULL; 
-
-	pid_t pid = fork();
-
-	if (pid == 0) 
-	{
-	    
-		execvp(arguments[0], arguments);
-		perror("execvp");
-		exit(EXIT_FAILURE);
-		
-	} else if (pid > 0)
-	{
-		int status;
-		waitpid(pid, &status, 0);
-	} else 
-	{
-	
-		perror("fork");
-	}
-}
+#include <sys/wait.h>
 
 int main() {
-	char command[MAX_COMMAND_LENGTH];
+    std::string command;
 
-	while (1) 
-	{
-		printf("$ ");
+    while (true) {
+        std::cout << "$-->  ";
+        std::getline(std::cin, command);
+        if (command == "end") {
+            break;
+        }
 
-		if (fgets(command, sizeof(command), stdin) == NULL) 
-		{
-			break; 
-		}
+        std::istringstream iss(command);
+        std::vector<std::string> arguments;
+        std::string argument;
+        while (iss >> argument) {
+            arguments.push_back(argument);
+        }
 
-		command[strcspn(command, "\n")] = '\0';
+        char* argv[arguments.size() + 1];
+        for (size_t i = 0; i < arguments.size(); ++i) {
+            argv[i] = const_cast<char*>(arguments[i].c_str());
+        }
+        argv[arguments.size()] = nullptr;
 
-		if (strcmp(command, "exit") == 0) 
-		{
-			break;
-		}
+        pid_t pid = fork();
 
-		execute_command(command);
-	}
+        if (pid == 0) {
+            execvp(argv[0], argv);
+            perror("error...");
+            return 1;
+        } else if (pid > 0) {
+            int status;
+            waitpid(pid, &status, 0);
+        } else {
+            perror("error...");
+            return 1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
+
