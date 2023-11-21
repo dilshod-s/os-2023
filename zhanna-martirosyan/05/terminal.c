@@ -36,13 +36,20 @@ int main() {
 
         pid_t pid = fork(); //создаем новый процесс для выполнения команды
 
+        int l = strchr(input, ' ') - input;
+        char *command = malloc(l + 1);
+        char *arguments = malloc(strlen(input) - l + 1);
+        strncpy(command, input, l);
+        command[l] = '\0';
+        strcpy(arguments, input + l + 1);
+
         if (pid == -1) {
             perror("Error creating process");
             exit(EXIT_FAILURE);
         }
         else if (pid == 0) {
             //дочерний процесс
-            execlp(input, input, (char *)NULL); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
+            execlp(command, command, arguments, (char *)NULL); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
             perror("Error executing command"); //если execlp() завершилась с ошибкой, выводится сообщение об ошибке и завершается выполнение программы
             exit(EXIT_FAILURE);
         }
