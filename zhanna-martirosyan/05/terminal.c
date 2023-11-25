@@ -16,7 +16,7 @@ int main() {
 
         //читаем команду, будет сохранена команда в input,
         // размер = sizeof(input), читаться команда будет из стандартного ввода. Возвращается указатель на буфер
-        if (fgets(input, sizeof(input), stdin) == NULL) { 
+        if (fgets(input, sizeof(input), stdin) == NULL) {
             perror("Error reading input");
             exit(EXIT_FAILURE);
         }
@@ -36,18 +36,20 @@ int main() {
 
         pid_t pid = fork(); //создаем новый процесс для выполнения команды
 
+        int l = strchr(input, ' ') - input;
+        char *command = malloc(l + 1);
+        char *arguments = malloc(strlen(input) - l + 1);
+        strncpy(command, input, l);
+        command[l] = '\0';
+        strcpy(arguments, input + l + 1);
+
         if (pid == -1) {
             perror("Error creating process");
             exit(EXIT_FAILURE);
         }
         else if (pid == 0) {
             //дочерний процесс
-            execlp("/bin/sh", "/bin/sh", "-c", input, (char *)NULL); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
-            // вызываем оболочку /bin/sh с аргументом -c, который позволяет выполнить команду из строки
-            // первый аргумент - путь к исполняемому файлу, второй - имя программы,
-            // третий - аргумент, передаваемый оболочке /bin/sh, который указывает, что следующий аргумент будет командой,
-            // четвертый - сама команда, NULL - конец списка аргументов
-
+            execlp(command, command, arguments, (char *)NULL); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
             perror("Error executing command"); //если execlp() завершилась с ошибкой, выводится сообщение об ошибке и завершается выполнение программы
             exit(EXIT_FAILURE);
         }
@@ -56,7 +58,7 @@ int main() {
             int status; //тут храним статус о выполнении команды в дочернем процессе
             waitpid(pid, &status, 0); //ждем, когда завершится дочерний процесс. Статус завершения будет храниться в переменной status
 
-            if (WIFEXITED(status) != 0) { //проверяем, завершился ли дочерний процесс нормально
+            if (WIFEXITED(status)!=0) { //проверяем, завершился ли дочерний процесс нормально
                 printf("Command executed successfully. Exit code: %d \n", WEXITSTATUS(status));
             }
             else {
