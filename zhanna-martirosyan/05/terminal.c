@@ -36,12 +36,16 @@ int main() {
 
         pid_t pid = fork(); //создаем новый процесс для выполнения команды
 
-        int l = strchr(input, ' ') - input;
-        char *command = malloc(l + 1);
-        char *arguments = malloc(strlen(input) - l + 1);
-        strncpy(command, input, l);
-        command[l] = '\0';
-        strcpy(arguments, input + l + 1);
+        char *arguments[len]; //массив указателей на строки
+        int i = 0;
+        char *command = strtok(input, " "); // берем первую часть строки(первое слово). Она является командой, которую нужно выполнить
+        while (command != NULL) { //будет возвращаться нулевой указатель после strtok до тех пор, пока не закончатся аргументы
+            // strtok возвращает указатель на следующий аргумент
+            arguments[i] = command; //arguments[0] - команда
+            ++i;
+            command = strtok(NULL, " "); //тут уже берем слеующий аргумент
+        }
+        arguments[i] = NULL; // последний элемент массива = NULL
 
         if (pid == -1) {
             perror("Error creating process");
@@ -49,7 +53,7 @@ int main() {
         }
         else if (pid == 0) {
             //дочерний процесс
-            execlp(command, command, arguments, (char *)NULL); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
+            execvp(arguments[0], arguments); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
             perror("Error executing command"); //если execlp() завершилась с ошибкой, выводится сообщение об ошибке и завершается выполнение программы
             exit(EXIT_FAILURE);
         }
