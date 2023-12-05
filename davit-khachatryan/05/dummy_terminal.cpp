@@ -119,10 +119,6 @@ public:
     }
 };
 
-/**
- * @brief Entry point of the program.
- * @return Exit code.
- */
 int main()
 {
     CommandShell::start();
