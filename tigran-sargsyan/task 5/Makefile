@@ -1,15 +1,10 @@
-CC = g++
-CFLAGS = -std=c++11 -Wall
+CC=g++
+CFLAGS=-std=c++11 -pthread
 
-TARGET = myterm
-SRC = main.cpp
+all: exec_command
 
-all: $(TARGET)
-
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
-
-.PHONY: clean
+exec_command: exec_command.cpp
+    $(CC) $(CFLAGS) -o exec_command exec_command.cpp
 
 clean:
-	rm -f $(TARGET)
+    rm -f exec_command
