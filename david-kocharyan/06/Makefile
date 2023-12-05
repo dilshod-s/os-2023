@@ -1,0 +1,13 @@
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall
+
+SRC_FILES = threads.cpp
+TARGET = threads
+
+all: $(TARGET)
+
+$(TARGET): $(SRC_FILES)
+	$(CXX) $(CXXFLAGS) $(SRC_FILES) -o $(TARGET)
+
+clean:
+	rm -f $(TARGET)
