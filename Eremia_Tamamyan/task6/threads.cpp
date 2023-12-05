@@ -21,10 +21,8 @@ int main() {
   std::vector<pthread_t> threads(ThreadsAmount);
   auto start = std::chrono::high_resolution_clock::now();
   unsigned int *args = new unsigned int{for_each_thread};
-  pthread_t thread;
   for (int i = 0; i < ThreadsAmount; i++) {
-    pthread_create(thread, NULL, worker, args);
-    threads[i] = thread;
+    pthread_create(threadп[i], NULL, worker, args);
   }
   for (int i = 0; i < ThreadsAmount; i++) 
     pthread_join(threads[i], NULL);
