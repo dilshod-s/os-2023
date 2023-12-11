@@ -1,0 +1,14 @@
+OBJDIR = obj
+OBJS = $(addprefix $(OBJDIR)/, main.o wordcount.o)
+
+all: wordcount
+
+wordcount: $(OBJS)
+    gcc $(CFLAGS) -o $@ $(OBJS)
+
+$(OBJDIR)/%.o: %.c wordcount.h
+    mkdir -p $(OBJDIR)
+    gcc $(CFLAGS) -c $< -o $@
+
+clean:
+    rm -rf wordcount $(OBJDIR)
