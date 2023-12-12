@@ -1,10 +1,10 @@
 echo "CC=g++
 CFLAGS=-std=c++11 -pthread
 
-all: thread
+all: threads
 
-thread: thread.cpp
-    \$(CC) \$(CFLAGS) -o thread thread.cpp
+thread: threads.cpp
+    \$(CC) \$(CFLAGS) -o threads threads.cpp
 
 clean:
-    rm -f thread" > Makefile
+    rm -f threads" > Makefile
