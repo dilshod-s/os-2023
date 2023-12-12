@@ -37,6 +37,7 @@ char* mem_allocator(Memory* mem, std::size_t size){
             if (current == count) {
 
                 first_page = i - count + 1;
+                break;
             }
 
         } else {
@@ -56,8 +57,11 @@ char* mem_allocator(Memory* mem, std::size_t size){
     for(std::size_t i = first_page; i < first_page + count; ++i){
 
         if(i == first_page){
+          
             mem->meta.arr[i] = 1;
-        }else {
+          
+        }else{
+          
             mem->meta.arr[i] = 2;
         }
     }
@@ -77,26 +81,29 @@ void clean(Memory* mem){
 
 }
 
-/* void* free(Memory* mem, void* ptr){
+ void* free(Memory* mem, void* ptr){
 
     if(!mem ||!ptr){
         return NULL;
     }
 
-    std::size_t page_id = static_cast<std::size_t>(ptr - mem->pages);
+    std::size_t page_id = static_cast<std::size_t>(ptr) - tatic_cast<std::size_t>(mem->pages);
+    page_id /= PGSIZE;
     
     if(mem->meta.arr[page_id] == 0){
         return NULL;
     } 
+    
     mem->meta.arr[page_id] = 0;
     ++page_id;
+    
     while((mem->meta.arr[page_id] != 0 && mem->meta.arr[page_id] != 1) && page_id != PGCOUNT )
     {
         mem->meta.arr[page_id++] = 0;
     }
     return ptr;
 
-} */
+} 
 
 
 int main() {
