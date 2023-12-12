@@ -1,6 +1,6 @@
 all: target
 
 target:
-		g++ terminal.cpp -o terminal
+		g++ myterm.cpp -o myterm
 clean:
-		rm -f terminal
+		rm -f myterm
