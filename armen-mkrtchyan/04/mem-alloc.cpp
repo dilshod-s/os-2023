@@ -1,3 +1,32 @@
+#include <iostream>
+
+#define PGCOUNT 257
+#define PGSIZE 256
+
+struct Page{
+  char arr[PGSIZE];
+};
+
+struct Memory{
+
+    Page pages[PGCOUNT];
+    Page &meta = pages[0];
+};
+
+char* mem_allocator(Memory* mem, std::size_t size){
+
+    if(!mem || !size)
+    {
+        return NULL;
+    }
+
+    std::size_t count = size/PGSIZE;
+    std::size_t current = 0;
+    std::size_t first_page = 0;
+
+    if( size % PGSIZE ){
+        ++count;
+    }
 
     for(std::size_t i = 1; i < PGCOUNT; ++i) {
 
@@ -52,7 +81,7 @@ void clean(Memory* mem){
 
 }
 
- void* free(Memory* mem, void* ptr){
+ /*void* free_mem(Memory* mem, void* ptr){
 
     if(!mem ||!ptr){
         return NULL;
@@ -74,10 +103,42 @@ void clean(Memory* mem){
     }
     return ptr;
 
-} 
+} */
 
 
-int main() {
+void print_mem(Memory* mem) {
+    
+    if (!mem) {
+        std::cout << "Invalid Memory\n";
+        return;
+    }
 
+    for (std::size_t i = 0; i < PGCOUNT; ++i) {
+        std::cout << "Page " << i << ": ";
+        for (std::size_t j = 0; j < PGSIZE; ++j) {
+            std::cout << static_cast<int>(mem->pages[i].arr[j]) << " ";
+        }
+        std::cout << "\n";
+    }
+}
 
-    return 0;}
+int main(){
+    
+    Memory myMemory;
+
+    /*char* ptr1 = mem_allocator(&myMemory, 512);
+    char* ptr2 = mem_allocator(&myMemory, 256);
+
+    // Пример вывода содержимого памяти
+    std::cout << "Before Allocation:\n";
+    print_mem(&myMemory);
+    
+    std::cout << "After Allocation:\n";
+    print_mem(&myMemory);
+
+    //free_mem(&myMemory, ptr1);
+    //std::cout << "After Freeing Memory:\n";
+    //print_mem(&myMemory);*/
+
+    return 0;
+}
