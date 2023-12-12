@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #define len 200
 
@@ -101,7 +102,10 @@ int main() {
 
 
         //проверяем наличие оператора "|"
-        char *pipe_token = strchr(input, '|');
+        char input_copy[len];
+        strcpy(input_copy, input);
+        char *pipe_token = strtok(input_copy, "|");
+
         if (pipe_token != NULL) {
             //разбиваем введенную строку на команды с использованием "|"
             while (pipe_token != NULL) {
@@ -126,17 +130,6 @@ int main() {
                 }
                 arguments[j] = NULL; // последний элемент массива = NULL
 
-                int output_fd; //файловый дескриптор, который определяет, куда дочерний процесс должен записывать вывод
-                if (i == command_count - 1) {
-                    output_fd = STDOUT_FILENO;
-                } else {
-                    output_fd = -1;
-                }
-
-
-                //передаем NULL для файлов ввода/вывода, так как они обрабатываются внутри command_execute
-                command_execute(arguments[0], arguments, input_fd, output_fd, NULL, NULL);
-
                 int pipe_fd[2]; //массив для хранения файловых дескрипторов pipe
                 // pipe_fd[0] будем использовать для чтения (read-end), pipe_fd[1] для записи (write-end)
 
@@ -146,12 +139,23 @@ int main() {
                     exit(EXIT_FAILURE);
                 }
 
+                int output_fd; //файловый дескриптор, который определяет, куда дочерний процесс должен записывать вывод
+                if (i == command_count - 1) {
+                    output_fd = STDOUT_FILENO;
+                } else {
+                    output_fd = pipe_fd[1];
+                }
+
+                //передаем NULL для файлов ввода/вывода, так как они обрабатываются внутри command_execute
+                command_execute(arguments[0], arguments, input_fd, output_fd, NULL, NULL);
+
                 //перенаправляем ввод следующей команде
                 if (i < command_count - 1) { //если есть еще команда, то
                     input_fd = pipe_fd[0]; //input_fd, который был направлен на стандартный ввод (STDIN_FILENO), теперь перенаправляется на read-end pipe (pipe_fd[0])
                     //т.е. вывод текущей команды это ввод для следующей команды
                     close(pipe_fd[1]); //write-end pipe (pipe_fd[1]) закрывается, потому что команда больше не будет записывать в нее
                 }
+
             }
         }
         else{
