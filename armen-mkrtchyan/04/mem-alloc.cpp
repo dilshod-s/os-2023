@@ -1,32 +1,3 @@
-#include <iostream>
-
-#define PGCOUNT 257
-#define PGSIZE 256
-
-struct Page{
-  char arr[PGSIZE];
-};
-
-struct Memory{
-
-    Page pages[PGCOUNT];
-    Page &meta = pages[0];
-};
-
-char* mem_allocator(Memory* mem, std::size_t size){
-
-    if(!mem || !size)
-    {
-        return NULL;
-    }
-
-    std::size_t count = size/PGSIZE;
-    std::size_t current = 0;
-    std::size_t first_page = 0;
-
-    if( size % PGSIZE ){
-        ++count;
-    }
 
     for(std::size_t i = 1; i < PGCOUNT; ++i) {
 
