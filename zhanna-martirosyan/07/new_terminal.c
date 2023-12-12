@@ -6,7 +6,7 @@
 
 #define len 200
 
-void command_execute(char *command, char **arguments, int input_fd, int output_fd) {
+void command_execute(char *command, char **arguments, int input_fd, int output_fd, char *input_file, char *output_file) {
     pid_t pid = fork();
 
     if (pid == -1) {
@@ -21,11 +21,33 @@ void command_execute(char *command, char **arguments, int input_fd, int output_f
             dup2(input_fd, STDIN_FILENO); //дублируем input_fd в стандартный ввод (STDIN_FILENO). Когда дочерний процесс читает из стандартного ввода, он будет читать из input_fd
             close(input_fd); //после дублирования удяляем ненужный оригинальный файловый дескриптор
         }
+        else if (input_file != NULL) { //если указан файл (input_file), открывается файл и его файловый дескриптор дублируется в stdin с помощью dup2
+            int input_file_fd = open(input_file, O_RDONLY);
+            if (input_file_fd == -1) {
+                perror("Error opening input file");
+                exit(EXIT_FAILURE);
+            }
+            dup2(input_file_fd, STDIN_FILENO);
+            close(input_file_fd);
+
+        }
 
         //проверяем нужно ли перенаправить вывод
         if (output_fd != STDOUT_FILENO) { //если output_fd не равен STDOUT_FILENO, значит нужно изменить текущий вывод дочернего процесса
             dup2(output_fd, STDOUT_FILENO);//дублируем output_fd в стандартный вывод (STDOUT_FILENO). Когда дочерний процесс записывает в стандартный вывод, он будет записывать в output_fd
             close(output_fd); //после дублирования удяляем ненужный оригинальный файловый дескриптор
+        }
+        else if (output_file != NULL) { //если указан файл (output_file), открывается файл, и его файловый дескриптор дублируется в stdout с помощью dup2
+            int output_file_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            //открываем файл для записи или создаем его, если он не существует.
+            //если файл существует, то он усекаем его до нулевой длины.
+            //дальше идут флаги прав доступа(чтение, запись для владельца и чтение для группы и чтение для остальных пользователей
+            if (output_file_fd == -1) {
+                perror("Error opening output file");
+                exit(EXIT_FAILURE);
+            }
+            dup2(output_file_fd, STDOUT_FILENO);
+            close(output_file_fd);
         }
 
         execvp(command, arguments); //заменяем этот процесс другим, запуская исполняемый файл с указанными аргументами.
@@ -111,7 +133,9 @@ int main() {
                     output_fd = -1;
                 }
 
-                command_execute(arguments[0], arguments, input_fd, output_fd);
+
+                //передаем NULL для файлов ввода/вывода, так как они обрабатываются внутри command_execute
+                command_execute(arguments[0], arguments, input_fd, output_fd, NULL, NULL);
 
                 int pipe_fd[2]; //массив для хранения файловых дескрипторов pipe
                 // pipe_fd[0] будем использовать для чтения (read-end), pipe_fd[1] для записи (write-end)
@@ -144,7 +168,9 @@ int main() {
             }
             arguments[i] = NULL; // последний элемент массива = NULL
 
-            command_execute(arguments[0], arguments, STDIN_FILENO, STDOUT_FILENO);
+
+            //передаем NULL для файлов ввода/вывода, так как они обрабатываются внутри command_execute
+            command_execute(arguments[0], arguments, STDIN_FILENO, STDOUT_FILENO, NULL, NULL);
         }
     }
 
