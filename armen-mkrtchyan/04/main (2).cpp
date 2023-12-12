@@ -87,7 +87,7 @@ void clean(Memory* mem){
         return NULL;
     }
 
-    std::size_t page_id = static_cast<std::size_t>(ptr) - tatic_cast<std::size_t>(mem->pages);
+    std::size_t page_id = static_cast<std::size_t>(ptr) - static_cast<std::size_t>(mem->pages);
     page_id /= PGSIZE;
     
     if(mem->meta.arr[page_id] == 0){
