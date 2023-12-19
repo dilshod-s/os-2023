@@ -57,12 +57,10 @@ char* mem_allocator(Memory* mem, std::size_t size){
     for(std::size_t i = first_page; i < first_page + count; ++i){
 
         if(i == first_page){
-          
-            mem->meta.arr[i] = 1;
+            mem->meta.arr[i-1] = 1;
           
         }else{
-          
-            mem->meta.arr[i] = 2;
+            mem->meta.arr[i-1] = 2;
         }
     }
     return  mem->pages[first_page].arr;
@@ -81,14 +79,15 @@ void clean(Memory* mem){
 
 }
 
- /*void* free_mem(Memory* mem, void* ptr){
+ void* free_mem(Memory* mem, void* ptr){
 
     if(!mem ||!ptr){
         return NULL;
     }
 
-    std::size_t page_id = static_cast<std::size_t>(ptr) - static_cast<std::size_t>(mem->pages);
+    std::size_t page_id = (uintptr_t)ptr - (uintptr_t)mem->pages;
     page_id /= PGSIZE;
+    page_id--;
     
     if(mem->meta.arr[page_id] == 0){
         return NULL;
@@ -103,7 +102,7 @@ void clean(Memory* mem){
     }
     return ptr;
 
-} */
+} 
 
 
 void print_mem(Memory* mem) {
@@ -113,32 +112,30 @@ void print_mem(Memory* mem) {
         return;
     }
 
-    for (std::size_t i = 0; i < PGCOUNT; ++i) {
-        std::cout << "Page " << i << ": ";
-        for (std::size_t j = 0; j < PGSIZE; ++j) {
-            std::cout << static_cast<int>(mem->pages[i].arr[j]) << " ";
-        }
+    for (std::size_t i =1; i < PGCOUNT; ++i) {
+        std::cout << "Page " << i << ":"<< static_cast<int>(mem->meta.arr[i-1]);
+        
         std::cout << "\n";
     }
 }
 
 int main(){
     
-    Memory myMemory;
+    /*Memory myMemory;
 
-    /*char* ptr1 = mem_allocator(&myMemory, 512);
-    char* ptr2 = mem_allocator(&myMemory, 256);
-
-    // Пример вывода содержимого памяти
     std::cout << "Before Allocation:\n";
     print_mem(&myMemory);
+    
+    char* ptr1 = mem_allocator(&myMemory, 512);
+    char* ptr2 = mem_allocator(&myMemory, 256);
     
     std::cout << "After Allocation:\n";
     print_mem(&myMemory);
 
-    //free_mem(&myMemory, ptr1);
-    //std::cout << "After Freeing Memory:\n";
-    //print_mem(&myMemory);*/
+    free_mem(&myMemory, ptr1);
+    
+    std::cout << "After Freeing Memory:\n";
+    print_mem(&myMemory);*/
 
     return 0;
 }
