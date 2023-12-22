@@ -3,69 +3,66 @@
 #include <random>
 #include <vector>
 #include <chrono>
+#include <algorithm>
+#include <pthread.h>
 
-std::vector<int> random_num(int n){
-    
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, 100);
-    std::vector<int> v(n);
-    
-    for(int i = 0; i < n; i++){
-        v[i] = dis(gen);
-    }
-    
-    return v;
-}
 
-int xor_sum(std::vector<int> v, int start, int end, int& result){
-    
-  int sum = 0;
-  
-  for(int i = start; i < end; i++){
-      
-    sum ^= v[i];
-  }
-  
-  return sum;
-}
+std::mt19937 gen;                              //generator (Mersenne Twister)
+std::uniform_int_distribution<> dis(1, 2000);  //ravnomerno raspredelyaet
+std::vector<unsigned int> v;                         
+unsigned int xor_sum = 0;
+unsigned int n = 100000000;
+void *worker(void *data);                      //opredelim pozje
 
-int main(int argc,char **argv){
+int main(){
     
-    if(argc != 2){ std::cerr << "Error"; }
-  
-    unsigned int k = std::stoi(argv[1]);
-    unsigned int n = 1000000000;
-    unsigned int thread_num = n/k;
-    std::vector<std::thread> threads(k);
-    std::vector<int> v = random_num(n);
-    std::vector<int> sums(k);
-    int answer = 0;
-    
+    unsigned int k;                            //number of threads
+    std::cout << "How many threads do you want to use? \n ";
+    std::cin >> k;
+    v.resize(k);
+    unsigned int one_thread_job = n / k;
+    std::vector<pthread_t> threads(k);
     auto start = std::chrono::high_resolution_clock::now();
-    
-    for(int i = 0; i < k; i++){
+
+    for(unsigned int i = 0; i < k; i++){
         
-        threads[i] = std::thread(xor_sum, std::ref(v), i * thread_num, (i + 1) * thread_num, std::ref(sums[i]));
-        
+        unsigned int *args = new unsigned int[2]{i, one_thread_job};
+        pthread_create(&threads[i], NULL, worker, args);
     }
 
-    for(int i = 0; i < k; i++){
+    for(unsigned int i = 0; i < k; i++){
         
-        threads[i].join();
-        
-    }
-
-    for(int i = 0; i < k; i++){
-        
-        answer ^= sums[i];
+        pthread_join(threads[i], NULL);
     }
   
+    
     auto finish = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
 
-    std::cout << "Result: " << answer << std::endl;
+    
     std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
+    for(unsigned int i = 0; i < v.size(); i++){
+        xor_sum ^= v[i];
+        
+    }
+    std::cout << "Result: " << xor_sum << std::endl;
     
     return 0;
+}
+
+void *worker(void *data){
+    
+  unsigned int *args = static_cast<unsigned int *>(data);
+  unsigned int range = args[1];
+  unsigned int index = args[0];
+  unsigned int xor_result = 0;
+
+  for (int i = 0; i < range; i++) {
+    xor_result ^= dis(gen);
+  }
+  
+  v[index] = xor_result;
+  
+  delete[] args;
+  pthread_exit(NULL);
 }
