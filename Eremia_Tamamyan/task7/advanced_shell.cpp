@@ -30,7 +30,9 @@ int main() {
     while (istring >> temp)
       args.push_back(temp);
     int pipe_count = std::count(args.begin(), args.end(), "|");
+
     if (pipe_count) {
+      pipe_count++;
       std::vector<std::string> pipe_args;
       int i = 0;
       auto it = args.begin();
@@ -38,10 +40,10 @@ int main() {
       while (i < pipe_count) {
         std::string input_file;
         std::string output_file;
-        while (it != args.end() && *it != "|"){
+        while (it != args.end() && *it != "|") {
+          std::cout << *it << std::endl;
           pipe_args.push_back(*it);
           it++;
-         
         }
         char *args_array[pipe_args.size() + 1];
         std::size_t j;
@@ -53,32 +55,35 @@ int main() {
         args_array[j] = nullptr;
 
         int pipe_fd[2];
-        if (i < pipe_count - 1 && pipe(pipe_fd) == -1) {
+        if (i < pipe_count && pipe(pipe_fd) == -1) {
           std::cerr << "Error creating pipe" << std::endl;
           exit(EXIT_FAILURE);
         }
+        int output_fd = STDOUT_FILENO;
         auto it2 = std::find(pipe_args.begin(), pipe_args.end(), "<");
         if (it2 != pipe_args.end())
           input_file = *(it2 + 1);
-        int output_fd = STDOUT_FILENO;
+
         it2 = std::find(pipe_args.begin(), pipe_args.end(), ">");
-          if (i < pipe_count - 1)
-            output_fd = pipe_fd[1];
-          else
-            output_fd = STDOUT_FILENO;
+        if (i < pipe_count - 1)
+          output_fd = pipe_fd[1];
+        else
+          output_fd = STDOUT_FILENO;
+
         if (it2 != pipe_args.end())
-          std::string output_file = *(it2 + 1);
+          output_file = *(it2 + 1);
 
         pid_t pid = fork();
         if (pid < 0) {
           std::cerr << "Error creating child process" << std::endl;
           exit(EXIT_FAILURE);
-        } 
-        else if (pid == 0) {
+        } else if (pid == 0) {
+
           if (output_fd != STDOUT_FILENO) {
             dup2(output_fd, STDOUT_FILENO);
             close(output_fd);
           }
+
           else if (output_file.size()) {
             int output_file_fd =
                 open(output_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -89,6 +94,7 @@ int main() {
             dup2(output_file_fd, STDOUT_FILENO);
             close(output_file_fd);
           }
+
           if (input_fd != STDIN_FILENO) {
             dup2(input_fd, STDIN_FILENO);
             close(input_fd);
@@ -116,14 +122,14 @@ int main() {
           if (i < pipe_count - 1) {
             input_fd = pipe_fd[0];
             close(pipe_fd[1]);
-          } 
-            for (int j = 0; j < i; ++j)
-              free(args_array[j]);
+          }
+          for (std::size_t z = 0; z < j; ++z)
+            free(args_array[z]);
+          pipe_args.clear();
+          std::cout << " i am here" << std::endl;
+          it++;
+          i++;
         }
-        i++;
-        pipe_args.clear();
-        for (size_t i = 0; i < args.size(); ++i)
-          free(args_array[i]);
       }
     }
     if (pipe_count == 0) {
@@ -166,14 +172,13 @@ int main() {
         }
         argv[i] = strdup(args[i].c_str());
       }
-      argv[i + 1] = nullptr;
+      argv[i] = nullptr;
       pid_t pid = fork();
 
       if (pid < 0)
         std::cerr << "fork error" << std::endl;
       else if (pid == 0) {
         execvp(argv[0], argv);
-
         std::cerr << "command didn't exist \n";
         exit(1);
       } else {
