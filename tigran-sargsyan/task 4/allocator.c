@@ -10,7 +10,7 @@ struct Memory {
 
 void initMem(struct Memory *mem) {
 	memset(&mem->buffer, 0, MEMSIZE);
-	// fist block is allocated for block index
+	// Выделяем первый блок для индекса блока
 	mem->buffer[0] = 1;
 }
 
@@ -22,14 +22,14 @@ int address2index(int addr) {
 	return addr / PGSIZE;
 }
 
-// Allocate max 1 page of memory
+// Выделяем максимум 1 страницу памяти
 void *alloc_1(struct Memory *mem, size_t sz) {
 	if (sz > PGSIZE) {
-		// exit(1); // unimplemented
+		// exit(1); // не реализован
 		return NULL;
 	}
 
-	// Search for free space
+	// Поиск свободного места
 	int i = 1;
 	for (; i < PGSIZE; i++) {
 		if (mem->buffer[i] == 0) {
@@ -37,10 +37,10 @@ void *alloc_1(struct Memory *mem, size_t sz) {
 		}
 	}
 
-	// Mark space as allocated
+	// Отмечаем пространство как выделенное
 	mem->buffer[i] = 1;
 
-	// Return address
+	// Возвращаем адрес
 	int addr = index2address(i);
 	return &mem->buffer[addr];
 };
