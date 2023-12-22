@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
+#define BUFFER_SIZE 200
+
+void command_execute(char *cmd, char **args, int input_descriptor, int output_descriptor, char *input_filename, char *output_filename) {
+    pid_t pid = fork();
+
+    if (pid == -1) {
+        perror("Error creating process");
+        exit(EXIT_FAILURE);
+    }
+    else if (pid == 0) {
+        if (input_descriptor != STDIN_FILENO) {
+            dup2(input_descriptor, STDIN_FILENO);
+            close(input_descriptor);
+        }
+        else if (input_filename != NULL) {
+            int input_file_descriptor = open(input_filename, O_RDONLY);
+            if (input_file_descriptor == -1) {
+                perror("Error opening input file");
+                exit(EXIT_FAILURE);
+            }
+            dup2(input_file_descriptor, STDIN_FILENO);
+            close(input_file_descriptor);
+        }
+
+        if (output_descriptor != STDOUT_FILENO) {
+            dup2(output_descriptor, STDOUT_FILENO);
+            close(output_descriptor);
+        }
+        else if (output_filename != NULL) {
+            int output_file_descriptor = open(output_filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            if (output_file_descriptor == -1) {
+                perror("Error opening output file");
+                exit(EXIT_FAILURE);
+            }
+            dup2(output_file_descriptor, STDOUT_FILENO);
+            close(output_file_descriptor);
+        }
+
+        execvp(cmd, args);
+        perror("Error executing command");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        int status;
+        waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status) != 0) {
+            printf("Command executed successfully. Exit code: %d \n", WEXITSTATUS(status));
+        }
+        else {
+            printf("Command terminated with an error. \n");
+        }
+    }
+}
+
+int main() {
+    char input[BUFFER_SIZE];
+
+    while (1) {
+        printf("Enter a command: ");
+        fflush(stdout);
+
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            perror("Error reading input");
+            exit(EXIT_FAILURE);
+        }
+
+        if (strlen(input) > 0 && input[strlen(input) - 1] == '\n') {
+            input[strlen(input) - 1] = '\0';
+        }
+        else if (input[0] == '\n') {
+            input[0] = '\0';
+        }
+
+        if (strcmp(input, "exit") == 0) {
+            break;
+        }
+
+        char *commands[BUFFER_SIZE];
+        int command_count = 0;
+
+        char input_copy[BUFFER_SIZE];
+        strcpy(input_copy, input);
+        char *pipe_token = strtok(input_copy, "|");
+
+        if (pipe_token != NULL) {
+            while (pipe_token != NULL) {
+                commands[command_count] = pipe_token;
+                ++command_count;
+                pipe_token = strtok(NULL, "|");
+            }
+
+            int input_descriptor = STDIN_FILENO;
+
+            for (int i = 0; i < command_count; ++i) {
+                char *cmd = strtok(commands[i], " ");
+                char *args[BUFFER_SIZE];
+                int j = 0;
+
+                while (cmd != NULL) {
+                    args[j] = cmd;
+                    ++j;
+                    cmd = strtok(NULL, " ");
+                }
+                args[j] = NULL;
+
+                int pipe_descriptors[2];
+
+                if (i < command_count - 1 && pipe(pipe_descriptors) == -1) {
+                    perror("Error creating pipe");
+                    exit(EXIT_FAILURE);
+                }
+
+                int output_descriptor;
+                if (i == command_count - 1) {
+                    output_descriptor = STDOUT_FILENO;
+                } else {
+                    output_descriptor = pipe_descriptors[1];
+                }
+
+                command_execute(args[0], args, input_descriptor, output_descriptor, NULL, NULL);
+
+                if (i < command_count - 1) {
+                    input_descriptor = pipe_descriptors[0];
+                    close(pipe_descriptors[1]);
+                }
+            }
+        }
+        else {
+            char *cmd = strtok(input, " ");
+            char *args[BUFFER_SIZE];
+            int i = 0;
+
+            while (cmd != NULL) {
+                args[i] = cmd;
+                ++i;
+                cmd = strtok(NULL, " ");
+            }
+            args[i] = NULL;
+
+            command_execute(args[0], args, STDIN_FILENO, STDOUT_FILENO, NULL, NULL);
+        }
+    }
+
+    printf("Program terminated.\n");
+
+    return 0;
+}
