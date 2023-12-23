@@ -24,7 +24,8 @@ int address2index(int addr) {
 void* alloc(struct Memory* mem, size_t sz) {
     if (sz > PGSIZE) {
         // Search for free space
-        for (int i = 0; i < MEMSIZE; i += PGSIZE) {
+        int i = 0;
+        for (; i < MEMSIZE; i += PGSIZE) {
             if (mem->buffer[i] == 0) {
                 break;
             }
@@ -79,8 +80,8 @@ int main() {
     struct Memory mem;
     initMem(&mem);
 
-    void* ptr1 = alloc_1(&mem, 128);
-    printf("Payload (alloc_1) // pointer = %lx\n", (size_t)ptr1);
+    void* ptr1 = alloc(&mem, 128);
+    printf("Payload (alloc) // pointer = %lx\n", (size_t)ptr1);
 
     void* ptr2 = alloc(&mem, 256);
     printf("Payload (alloc) // pointer = %lx\n", (size_t)ptr2);
