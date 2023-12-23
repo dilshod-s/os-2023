@@ -41,15 +41,13 @@ int main() {
         std::string input_file;
         std::string output_file;
         while (it != args.end() && *it != "|") {
-          std::cout << *it << std::endl;
           pipe_args.push_back(*it);
           it++;
         }
         char *args_array[pipe_args.size() + 1];
         std::size_t j;
         for (j = 0; j < pipe_args.size(); ++j) {
-          if (pipe_args[j] == "<" || pipe_args[j] == ">"){
-            std::cout <<" ia m breaking"<<std::endl;
+          if (pipe_args[j] == "<" || pipe_args[j] == ">") {
             break;
           }
           args_array[j] = strdup(pipe_args[j].c_str());
@@ -81,9 +79,7 @@ int main() {
           exit(EXIT_FAILURE);
         } else if (pid == 0) {
 
-          
-
-          if (output_file.size()) {
+          if (output_file.size() != 0) {
             int output_file_fd =
                 open(output_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
             if (output_file_fd == -1) {
@@ -93,24 +89,25 @@ int main() {
             dup2(output_file_fd, STDOUT_FILENO);
             close(output_file_fd);
           }
-            
+
           else if (output_fd != STDOUT_FILENO) {
             dup2(output_fd, STDOUT_FILENO);
             close(output_fd);
           }
-          if (input_file.size()) {
-          int input_file_fd = open(input_file.c_str(), O_RDONLY);
-          if (input_file_fd == -1) {
-            std::cerr << "Error opening input file" << std::endl;
-            exit(EXIT_FAILURE);
-          }
-          else  if (input_fd != STDIN_FILENO) {
-            dup2(input_fd, STDIN_FILENO);
-            close(input_fd);
-          }  
+
+          if (input_file.size() != 0) {
+            int input_file_fd = open(input_file.c_str(), O_RDONLY);
+            if (input_file_fd == -1) {
+              std::cerr << "Error opening input file" << std::endl;
+              exit(EXIT_FAILURE);
+            }
             dup2(input_file_fd, STDIN_FILENO);
             close(input_file_fd);
+          } else if (input_fd != STDIN_FILENO) {
+            dup2(input_fd, STDIN_FILENO);
+            close(input_fd);
           }
+
           execvp(args_array[0], args_array);
           std::cerr << "Error executing command" << std::endl;
           exit(EXIT_FAILURE);
@@ -130,7 +127,6 @@ int main() {
           for (std::size_t z = 0; z < j; ++z)
             free(args_array[z]);
           pipe_args.clear();
-          std::cout << " i am here" << std::endl;
           it++;
           i++;
         }
