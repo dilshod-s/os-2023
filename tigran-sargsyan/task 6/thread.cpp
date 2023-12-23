@@ -9,6 +9,25 @@ void calculate_xor_sum(std::vector<int>& nums, int start, int end, int& result) 
         result ^= nums[i];
     }
 }
+struct ThreadData {
+    std::vector<int>& nums;
+    int start_index;
+    int end_index;
+    int& result;
+};
+
+void* calculate_xor_sum_pthread(void* arg) {
+    ThreadData* data = static_cast<ThreadData*>(arg);
+
+    std::vector<int>& nums = data->nums;
+    int start_index = data->start_index;
+    int end_index = data->end_index;
+    int& result = data->result;
+
+    calculate_xor_sum(nums, start_index, end_index, result);
+
+    pthread_exit(NULL);
+}
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -29,16 +48,18 @@ int main(int argc, char* argv[]) {
         nums[i] = dis(gen);
     }
 
-    std::vector<std::thread> threads(num_threads);
+    pthread_t threads[num_threads];
     std::vector<int> results(num_threads);
+    std::vector<ThreadData> thread_data(num_threads);
     auto start_time = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < num_threads; ++i) {
-        threads[i] = std::thread(calculate_xor_sum, std::ref(nums), i * chunk_size, (i + 1) * chunk_size, std::ref(results[i]));
+        thread_data[i] = {nums, i * chunk_size, (i + 1) * chunk_size, results[i]};
+        int create_result = pthread_create(&threads[i], NULL, calculate_xor_sum_pthread, &thread_data[i]);
     }
 
     for (int i = 0; i < num_threads; ++i) {
-        threads[i].join();
+        pthread_join(threads[i], NULL);
     }
 
     int final_result = 0;
