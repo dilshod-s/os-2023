@@ -133,37 +133,7 @@ int main() {
       }
     }
     if (pipe_count == 0) {
-      auto it = std::find(args.begin(), args.end(), "<");
-      if (it != args.end()) {
-        std::cout << "input file" << std::endl;
-        ++it;
-        std::string file = *it;
-        it--;
-        const char *cstr = file.c_str();
-        int fd = open(cstr, O_RDONLY);
-        if (fd == -1) {
-          std::cout << "File does not exist" << std::endl;
-          exit(1);
-        }
-        dup2(fd, 0);
-        close(fd);
-      }
 
-      it = std::find(args.begin(), args.end(), ">");
-      if (it != args.end()) {
-        std::cout << "output file" << std::endl;
-        ++it;
-        std::string file = *it;
-        it--;
-        const char *cstr = file.c_str();
-        int fd = open(cstr, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        if (fd == -1) {
-          std::cout << "File does not exist" << std::endl;
-          exit(1);
-        }
-        dup2(fd, 1);
-        close(fd);
-      }
       char *argv[args.size() + 1];
       std::size_t i;
       for (i = 0; i < args.size(); i++) {
@@ -178,6 +148,31 @@ int main() {
       if (pid < 0)
         std::cerr << "fork error" << std::endl;
       else if (pid == 0) {
+        auto it = std::find(args.begin(), args.end(), "<");
+        if (it != args.end() && it + 1 != args.end()) {
+          std::string file = *(it + 1);
+          const char *cstr = file.c_str();
+          int fd = open(cstr, O_RDONLY);
+          if (fd == -1) {
+            std::cout << "File does not exist" << std::endl;
+            exit(1);
+          }
+          dup2(fd, 0);
+          close(fd);
+        }
+
+        it = std::find(args.begin(), args.end(), ">");
+        if (it != args.end() && it + 1 != args.end()) {
+          std::string file = *(it + 1);
+          const char *cstr = file.c_str();
+          int fd = open(cstr, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+          if (fd == -1) {
+            std::cout << "File does not exist" << std::endl;
+            exit(1);
+          }
+          dup2(fd, 1);
+          close(fd);
+        }
         execvp(argv[0], argv);
         std::cerr << "command didn't exist \n";
         exit(1);
