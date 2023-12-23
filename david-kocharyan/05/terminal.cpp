@@ -4,7 +4,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void runCommand(const std::string& command) {
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+void runCommand(const std::string& cmd) {
     pid_t pid = fork();
 
     if (pid < 0) {
@@ -12,8 +18,20 @@ void runCommand(const std::string& command) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         // Child process
-        const char* cmd = command.c_str();
-        execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);
+        char *arguments[64]; 
+        int i = 0;
+        char *command = strtok((char*)cmd.c_str(), " "); 
+        
+        while (command != NULL) 
+        {
+            arguments[i] = command; 
+            ++i;
+            command = strtok(NULL, " "); 
+        }
+        arguments[i] = NULL; 
+        
+        
+        execvp(arguments[0], arguments);
         
         std::cerr << "Error executing command\n";
         exit(EXIT_FAILURE);
