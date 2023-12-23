@@ -25,13 +25,11 @@ int address2index(int addr) {
 // Выделяем максимум 1 страницу памяти
 void *alloc_1(struct Memory *mem, size_t sz) {
 	if (sz > PGSIZE) {
-		// exit(1); // не реализован
 		return NULL;
 	}
 
 	// Поиск свободного места
-	int i = 1;
-	for (; i < PGSIZE; i++) {
+	for (int i = 1; i < PGSIZE; i++) {
 		if (mem->buffer[i] == 0) {
 			break;
 		}
