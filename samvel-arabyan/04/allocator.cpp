@@ -1,81 +1,120 @@
-#include <cstddef>
+#include <iostream>
+#include <string.h>
 
-// Структура для хранения информации о блоках памяти
-struct Block {
-    size_t size;      // размер блока памяти
-    bool free;        // флаг, указывающий, свободен ли блок
-    struct Block* next; // указатель на следующий блок
-};
-
-// Структура для хранения информации о выделенной памяти
+#define MEMSIZE (1 << 16)
+#define PGSIZE (1 << 8)
+#define PGCOUNT (MEMSIZE/PGSIZE)
 struct Memory {
-    struct Block* head; // указатель на начало списка блоков
+    char buffer[MEMSIZE];
 };
 
-// Инициализация аллокатора
-void initAllocator(Memory* mem, size_t size) {
-    // Выделяем память для аллокатора
-    mem->head = reinterpret_cast<Block*>(new char[size]);
-    mem->head->size = size - sizeof(Block);
-    mem->head->free = true;
-    mem->head->next = nullptr;
+void initMem(struct Memory *mem) {
+    memset(mem->buffer, 0, MEMSIZE);    
+    mem->buffer[0] = 1;
 }
 
-// Выделение блока памяти
-void* alloc(Memory* mem, size_t size) {
-    // Поиск свободного блока в списке
-    Block* current = mem->head;
-    while (current != nullptr) {
-        if (current->free && current->size >= size) {
-            // Найден подходящий свободный блок
-            current->free = false; // блок теперь занят
-            return reinterpret_cast<void*>(current + 1); // возвращаем указатель на данные (после заголовка блока)
+int index2address(int idx) {
+    return idx * PGSIZE;
+}
+
+int address2index(int addr) {
+    return addr / PGSIZE;
+}
+
+void *alloc(struct Memory *mem, size_t sz) {
+    int count_of_pages;
+    if (sz > PGSIZE) {
+        if(sz%PGSIZE == 0){
+             count_of_pages = sz / PGSIZE;
         }
-        current = current->next;
+        else{
+             count_of_pages = (sz / PGSIZE) + 1;
+        }
+        int count_of_emptypgs = 0;
+        bool found_sequence = false;                
+        int i = 1;
+
+        for (; i < MEMSIZE - 1; ++i) {
+            if (mem->buffer[i] == 0) {
+                ++count_of_emptypgs;
+            } else {
+                count_of_emptypgs = 0;
+            }
+
+            if (count_of_emptypgs == count_of_pages) {
+                found_sequence = true;
+                break;
+            }
+        }
+
+        if (found_sequence) {
+            mem->buffer[i - count_of_pages + 1] = 1;            
+            for (int l = i - count_of_pages + 2; l <= i; ++l) {
+                mem->buffer[l] = 2;
+            }            
+            int addr = index2address(i - count_of_pages + 1);
+            return &mem->buffer[addr];
+        } else {            
+            return NULL;
+        }
     }
-
-    // Если свободный блок не найден, вернуть NULL
-    return nullptr;
-}
-
-// Освобождение блока памяти
-int my_free(Memory* mem, void* ptr) {
-    if (ptr == nullptr) {
-        return 0;
+     else {
+        int i = 1;
+        for (; i < PGCOUNT; i++) {
+            if (mem->buffer[i] == 0) {
+                break;
+            }
+        }
+        mem->buffer[i] = 1;        
+        int addr = index2address(i);
+        return &mem->buffer[addr];
     }
-
-    // Получаем указатель на заголовок блока
-    Block* block = reinterpret_cast<Block*>(ptr) - 1;
-
-    // Помечаем блок как свободный
-    block->free = true;
-
-    return static_cast<int>(block->size);
 }
 
-// Освобождение памяти, выделенной аллокатором
-void destroyAllocator(Memory* mem) {
-    delete[] reinterpret_cast<char*>(mem->head);
+void print( Memory* mem){
+    for(int i  = 0;i<10;++i){
+        std::cout << (int)mem->buffer[i] << " ";
+    }
+}
+int clean(struct Memory *mem) {
+    memset(&(mem->buffer[1]), 0, MEMSIZE - 1);
+    return 0;
 }
 
-// Пример использования аллокатора
+int free(Memory* mem,void* ptr){
+    int index = address2index((int) ((char*)ptr -  mem->buffer));
+    int i = index;
+    if ((size_t) ptr % PGSIZE != 0 && mem->buffer[i]!=1) {
+        return -1;
+    }
+    mem->buffer[i] = 0;
+    for(++i;i<PGCOUNT;++i){
+        if(mem->buffer[i] != 2){
+            break;
+        }
+        mem->buffer[i] = 0;
+    }
+    return 0;
+}
+            
 int main() {
-    Memory myAllocator;
-    initAllocator(&myAllocator, 1024);
+    struct Memory mem;
+    initMem(&mem);
 
-    // Выделение памяти
-    int* arr = static_cast<int*>(alloc(&myAllocator, 5 * sizeof(int)));
+    void *ptr = &mem.buffer;
+    printf("Payload // pointer = %lx\n", (size_t) mem.buffer);
 
-    // Использование выделенной памяти
-    for (int i = 0; i < 5; ++i) {
-        arr[i] = i;
-    }
+    ptr = alloc(&mem, 128);
+    printf("Payload // pointer = %lx\n", (size_t) ptr);
+    
+     
+    ptr = alloc(&mem, 256);
+    printf("Payload // pointer = %lx\n", (size_t) ptr);
+    free(&mem,ptr);
 
-    // Освобождение памяти
-    int freedBytes = my_free(&myAllocator, arr);
-
-    // Уничтожение аллокатора
-    destroyAllocator(&myAllocator);
+    ptr = alloc(&mem, 1);
+    
+    printf("Payload // pointer = %lx\n", (size_t) ptr);
 
     return 0;
 }
