@@ -1,48 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-int
-main()
-{
-    char input[500];
+void executeCommand(char** args) {
+    pid_t pid = fork();
 
+    if (pid == -1) {
+        perror("Error in fork()\n");
+    }
+    /// Код, выполняемый в дочернем процессе
+    else if (pid == 0) {
+        /// Замена текущего образа процесса новым (выполнение команды)
+        execvp(args[0], args);
+        perror("Error in execvp()\n");
+        return;
+    }
+    /// Код, выполняемый в родительском процессе
+    else {
+        int status;
+        waitpid(pid, &status, 0);
+
+        /// Обработка статуса завершения дочернего процесса
+        if (!WIFEXITED(status)){
+            perror("Дочерний процесс завершился не нормально\n");
+            
+        }
+    }
+}
+
+
+int main() {
     while (1) {
         printf("$ ");
-        fflush(stdout);
+        
+        char input[1024];
+        fgets(input, sizeof(input), stdin);
 
-        ssize_t bytesRead = read(0, input, sizeof(input));
+        char* args[64];
+        int argc = 0;
 
-        if (bytesRead == -1) {
-            perror("Error reading input");
-            exit(1);
+        char* token = strtok(input, " \n");
+
+        while (token != NULL) {
+            args[argc++] = token;
+            token = strtok(NULL, " \n");
         }
 
-        input[bytesRead - 1] = '\0';
+        args[argc] = NULL;
 
-        if (strcmp(input, "exit") == 0) {
-            break;
-        }
-
-        pid_t pid = fork();
-
-        if (pid < 0) {
-            perror("Error creating process");
-            exit(1);
-        } else if (pid == 0) {
-            execlp("/bin/sh", "/bin/sh", "-c", input, (char *)NULL);
-
-            perror("Error executing command");
-            exit(1);
-        } else {
-            int status;
-            waitpid(pid, &status, 0);
-
-            if (WIFEXITED(status) == 0) {
-                printf("Command terminated with an error. \n");
-            }
+        if (argc > 0) {
+            executeCommand(args);
         }
     }
 

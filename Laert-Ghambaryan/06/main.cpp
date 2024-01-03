@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
 
     int numThreads = std::atoi(argv[1]);
 
-    const int N = 100000;
-    
+    const int N = 100000000;
+
     std::vector<uint32_t> randomNumbers;
     std::srand(static_cast<unsigned>(std::time(0)));
     for (int i = 0; i < N; ++i) {
@@ -58,10 +58,11 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < numThreads; ++i) {
         threadData[i] = {&randomNumbers, chunks[i].first, chunks[i].second, 0};
         pthread_create(&threads[i], nullptr, calculateXORSum, &threadData[i]);
-        pthread_detach(threads[i]);  
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    for (int i = 0; i < numThreads; ++i) {
+        pthread_join(threads[i], nullptr);
+    }
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
@@ -76,4 +77,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-

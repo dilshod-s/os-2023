@@ -38,6 +38,9 @@ int main()
             execvp(argumentArray[0], argumentArray);
 
             std::cerr << "Command not found or failed to execute." << std::endl;
+            for (size_t i = 0; argumentArray[i] != nullptr; ++i)
+                free(argumentArray[i]);
+            delete[] argumentArray;
             exit(1);
         }
         else

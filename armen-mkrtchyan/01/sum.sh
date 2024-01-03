@@ -1,19 +1,22 @@
 #!/bin/bash
 
-
-if [[ $# != 1 ]]
-then
-	exit 1
-fi
-
 sum=0
 
-read my_limit
-for (( sum=0; $sum < my_limit; ))
+if [[ $# != 1 || "$1" =~ ^[0-9]+$ ]]
+then
+    exit 1
+fi
 
+while [[ $sum < $1 ]]
 do
-read num
-let sum+=num
-done
+	read num
+	if [[ -z "$num" ]]
+	then
+        	break
+    	fi
+	let sum+=num
+done 
 
-echo $sum
+echo "$sum"
+
+exit 0
